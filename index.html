@@ -274,6 +274,53 @@ button{ font:inherit; }
 .over-best{ margin:12px 0 24px; font-size:15px; letter-spacing:.28em; color:var(--dim); font-weight:700; }
 .over-best b{ color:#eaf6ff; font-family:'Orbitron',sans-serif; letter-spacing:.05em; }
 
+/* ── TOP 5 ranking + name entry ── */
+.top5-wrap{ margin:20px auto 0; max-width:390px; text-align:left; }
+.top5-wrap.over{ margin-top:14px; }
+.top5-hd{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;
+  font-size:10px; letter-spacing:.4em; color:var(--dim); font-weight:700; text-indent:.2em; }
+.mode-tag{ font-family:'Orbitron',sans-serif; font-size:9px; letter-spacing:.22em; text-indent:.22em;
+  padding:3px 10px 4px; color:var(--lime); box-shadow:inset 0 0 0 1px rgba(163,255,18,.5);
+  clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+.mode-tag.local{ color:var(--amber); box-shadow:inset 0 0 0 1px rgba(255,179,0,.55); }
+.top5{ list-style:none; display:grid; gap:5px; }
+.t5-row{ display:flex; align-items:center; gap:12px; padding:7px 14px;
+  background:linear-gradient(90deg,rgba(14,20,50,.85),rgba(8,12,32,.55));
+  box-shadow:inset 0 0 0 1px var(--line);
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  animation:t5In .4s cubic-bezier(.34,1.56,.64,1) both; }
+.t5-row:nth-child(2){ animation-delay:.06s; } .t5-row:nth-child(3){ animation-delay:.12s; }
+.t5-row:nth-child(4){ animation-delay:.18s; } .t5-row:nth-child(5){ animation-delay:.24s; }
+@keyframes t5In{ from{ opacity:0; transform:translateX(-16px) scale(.94); } }
+.t5-rk{ font-family:'Orbitron',sans-serif; font-weight:800; font-size:13px; width:20px; text-align:center; color:var(--dim); }
+.t5-rk.r1{ color:var(--amber); text-shadow:0 0 10px rgba(255,179,0,.85); }
+.t5-rk.r2{ color:#cfd8ff; text-shadow:0 0 8px rgba(207,216,255,.6); }
+.t5-rk.r3{ color:#ff9d76; text-shadow:0 0 8px rgba(255,157,118,.6); }
+.t5-name{ flex:1; min-width:0; font-weight:700; letter-spacing:.14em; font-size:15px; color:#eaf6ff;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.t5-score{ font-family:'Orbitron',sans-serif; font-weight:800; font-size:14px; color:var(--cyan);
+  text-shadow:0 0 10px rgba(0,229,255,.5); }
+.t5-row.me{ box-shadow:inset 0 0 0 1px rgba(163,255,18,.75), 0 0 18px rgba(163,255,18,.28); }
+.t5-row.me .t5-name{ color:var(--lime); text-shadow:0 0 10px rgba(163,255,18,.6); }
+.t5-empty,.t5-loading{ text-align:center; color:var(--dim); letter-spacing:.3em; font-size:11px;
+  font-weight:700; padding:12px; list-style:none; }
+.enter-wrap{ margin:18px auto 0; max-width:390px; }
+.enter-lbl{ font-family:'Orbitron',sans-serif; font-size:11px; font-weight:800; letter-spacing:.2em;
+  color:var(--lime); text-shadow:0 0 12px rgba(163,255,18,.6); animation:enterGlow 1.6s ease-in-out infinite; }
+@keyframes enterGlow{ 0%,100%{ opacity:.85; } 50%{ opacity:1; text-shadow:0 0 20px rgba(163,255,18,.95); } }
+.enter-row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
+#name-in{ flex:1; min-width:0; background:rgba(4,6,18,.92); border:none; outline:none;
+  box-shadow:inset 0 0 0 1px var(--line), inset 0 0 18px rgba(0,229,255,.06);
+  clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+  color:var(--cyan); font-family:'Orbitron',sans-serif; font-weight:800; font-size:16px; letter-spacing:.16em;
+  padding:11px 14px; text-transform:uppercase; caret-color:var(--magenta); transition:box-shadow .2s; }
+#name-in:focus{ box-shadow:inset 0 0 0 1px var(--cyan), 0 0 18px rgba(0,229,255,.4), inset 0 0 18px rgba(0,229,255,.1); }
+#name-in::placeholder{ color:#39436f; }
+#name-in:disabled{ opacity:.55; }
+#name-count{ font-family:'Orbitron',sans-serif; font-size:11px; color:var(--dim); letter-spacing:.1em; min-width:36px; text-align:right; }
+.btn.mini{ padding:11px 18px 11px 24px; font-size:12px; letter-spacing:.16em; }
+.btn.mini:disabled{ filter:grayscale(.7) brightness(.55); cursor:default; box-shadow:none; transform:none; }
+
 /* ════════════════════════════════════════════════════════════
    ANIMATIONS — keyframes
    ════════════════════════════════════════════════════════════ */
@@ -384,6 +431,10 @@ button{ font:inherit; }
         <li><b class="lm">25 moves</b>. Matches of 4+ grant <b class="lm">+2 bonus moves</b>; cascades multiply score.</li>
         <li>Stall for <b class="cy">10s</b> and the grid bounces a combo for you — costing <b class="cr">−1 move</b>. Best score is kept in a browser cookie.</li>
       </ul>
+      <div class="top5-wrap">
+        <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
+        <ol class="top5" id="top5-start"><li class="t5-loading">LOADING…</li></ol>
+      </div>
       <button class="btn" id="play-btn">PLAY</button>
     </div>
   </div>
@@ -398,6 +449,18 @@ button{ font:inherit; }
       <div id="rank">SPARK</div>
       <div id="new-best" class="newbest off">NEW BEST</div>
       <div class="over-best">BEST&nbsp;&nbsp;<b id="best-final">0</b></div>
+      <div id="enter-wrap" class="enter-wrap off">
+        <div class="enter-lbl">// YOU MADE THE TOP 5 — ENTER CALLSIGN //</div>
+        <div class="enter-row">
+          <input id="name-in" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NAME" />
+          <span id="name-count">0/10</span>
+          <button class="btn mini" id="save-btn">SAVE</button>
+        </div>
+      </div>
+      <div class="top5-wrap over">
+        <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode2">LOCAL</span></div>
+        <ol class="top5" id="top5-over"><li class="t5-loading">LOADING…</li></ol>
+      </div>
       <button class="btn mag" id="again-btn">PLAY AGAIN</button>
     </div>
   </div>
@@ -442,6 +505,48 @@ let game = null, particles = null;
 const Cookie = {
   get(k){ const m=document.cookie.match(new RegExp('(?:^|;\\s*)'+k+'=([^;]*)')); return m?decodeURIComponent(m[1]):null; },
   set(k,v,days){ try{ document.cookie=k+'='+encodeURIComponent(v)+'; max-age='+Math.floor(days*86400)+'; path=/; SameSite=Lax'; }catch(e){} }
+};
+
+/* ══ GLOBAL TOP-5 LEADERBOARD ══════════════════════════════════
+   Paste your FREE Supabase project URL + anon key below and the
+   Top 5 becomes shared worldwide (setup: README.md). Leave them
+   empty → ranking is stored per-device in localStorage.         */
+const SUPA_URL = '';
+const SUPA_KEY = '';
+
+const LB = {
+  mode:(SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
+  _hd(){ return { apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }; },
+  async load(){
+    if(this.mode==='GLOBAL'){
+      try{
+        const r=await fetch(SUPA_URL+'/rest/v1/neon_scores?select=name,score&order=score.desc,id.asc&limit=5',{headers:this._hd()});
+        if(r.ok) return await r.json();
+      }catch(e){ /* offline → fall through to local */ }
+    }
+    return this.loadLocal();
+  },
+  loadLocal(){ try{ return JSON.parse(localStorage.getItem('nc-top5')||'[]'); }catch(e){ return []; } },
+  async save(name,score){
+    if(this.mode==='GLOBAL'){
+      try{
+        const r=await fetch(SUPA_URL+'/rest/v1/neon_scores',{
+          method:'POST',
+          headers:{ ...this._hd(), 'Content-Type':'application/json' },
+          body:JSON.stringify({name,score})
+        });
+        if(r.ok) return {ok:true};
+      }catch(e){ /* offline → also keep a local copy */ }
+    }
+    const l=this.loadLocal();
+    l.push({name,score});
+    l.sort((a,b)=>b.score-a.score);
+    try{ localStorage.setItem('nc-top5',JSON.stringify(l.slice(0,5))); }catch(e){}
+    return {ok:true};
+  },
+  qualifies(list,score){
+    return score>0 && (list.length<5 || score>list[list.length-1].score);
+  }
 };
 
 /* ─────────────────────────── STATE ──────────────────────────── */
@@ -737,21 +842,74 @@ const UI = {
     gsap.fromTo(this.scoreEl,{scale:1.34},{scale:1,duration:.35,ease:'back.out(3)',overwrite:true});
   },
   hideOverlay(){ gsap.to(this.overlay,{autoAlpha:0,duration:.35,ease:'power2.inOut'}); },
+  setModeTag(el){ el.textContent=LB.mode; el.classList.toggle('local', LB.mode==='LOCAL'); },
+  renderTop5(el,list,me){
+    el.textContent='';
+    if(!list.length){
+      const li=document.createElement('li'); li.className='t5-empty';
+      li.textContent='— NO SCORES YET —'; el.appendChild(li); return;
+    }
+    let marked=false;
+    list.slice(0,5).forEach((s,i)=>{
+      const mine = me && !marked && s.name===me.name && s.score===me.score;
+      if(mine) marked=true;
+      const li=document.createElement('li'); li.className='t5-row'+(mine?' me':'');
+      const rk=document.createElement('span'); rk.className='t5-rk r'+(i+1); rk.textContent=i+1;
+      const nm=document.createElement('span'); nm.className='t5-name';
+      nm.textContent=s.name+(mine?' \u00b7YOU':'');
+      const sc=document.createElement('span'); sc.className='t5-score'; sc.textContent=s.score;
+      li.append(rk,nm,sc); el.appendChild(li);
+    });
+  },
   showStart(){
     this.overPanel.classList.add('off'); this.startPanel.classList.remove('off');
+    this.setModeTag($('#top5-mode'));
+    $('#top5-start').innerHTML='<li class="t5-loading">LOADING\u2026</li>';
+    LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
     gsap.to(this.overlay,{autoAlpha:1,duration:.3});
     gsap.fromTo(this.startPanel,{scale:.85,y:26,autoAlpha:0},{scale:1,y:0,autoAlpha:1,duration:.5,ease:'back.out(1.5)'});
   },
-  showGameOver(final,best,isNew){
+  showGameOver(final,best,isNew,list){
     this.startPanel.classList.add('off'); this.overPanel.classList.remove('off');
     this.rankEl.textContent = rankFor(final);
     this.nbEl.classList.toggle('off', !isNew);
     this.bestFinalEl.textContent = best;
+    this.setModeTag($('#top5-mode2'));
+    const q=LB.qualifies(list,final);
+    $('#enter-wrap').classList.toggle('off', !q);
+    this.renderTop5($('#top5-over'), list, null);
+    if(q){
+      this._pending=final;
+      const inp=$('#name-in');
+      inp.disabled=false;
+      inp.value=(localStorage.getItem('nc-name')||'').slice(0,10);
+      $('#name-count').textContent=inp.value.length+'/10';
+      const btn=$('#save-btn'); btn.disabled=!inp.value.trim(); btn.textContent='SAVE';
+      setTimeout(()=>inp.focus(), 480);
+    }
     gsap.to(this.overlay,{autoAlpha:1,duration:.35});
     gsap.fromTo(this.overPanel,{scale:.85,y:26,autoAlpha:0},{scale:1,y:0,autoAlpha:1,duration:.55,ease:'back.out(1.5)'});
     const o={v:0};
     gsap.to(o,{v:final,duration:1,ease:'power2.out',delay:.25,
       onUpdate:()=>{ this.finalEl.textContent=Math.round(o.v); }});
+  },
+  async saveName(){
+    const inp=$('#name-in'), btn=$('#save-btn');
+    if(inp.disabled) return;
+    const name=inp.value.trim().toUpperCase().replace(/\s+/g,' ').slice(0,10);
+    if(!name){
+      gsap.fromTo(inp,{x:-7},{x:0,duration:.45,ease:'elastic.out(1,.3)'});
+      inp.focus(); return;
+    }
+    try{ localStorage.setItem('nc-name',name); }catch(e){}
+    inp.disabled=true; btn.disabled=true; btn.textContent='SAVED';
+    AudioFX.bonus();
+    await LB.save(name, this._pending);
+    const list=await LB.load();
+    this.renderTop5($('#top5-over'), list, {name, score:this._pending});
+    const W=N*CFG.cell/2;
+    particles.burst(W,W*.3,'#a3ff12',16,1.4);
+    ring(W,W*.3,'#a3ff12',{from:.4,to:3,dur:.5});
   },
 };
 
@@ -1257,6 +1415,12 @@ class Game{
     $('#crush').addEventListener('click', ()=>this.crush());
     UI.crushBtn=$('#crush'); UI.crushT=$('#crush-t'); UI.crushCool=$('#crush-cool');
     UI.renderCrush(this);
+    $('#save-btn').addEventListener('click', ()=>UI.saveName());
+    $('#name-in').addEventListener('input', e=>{
+      $('#name-count').textContent=e.target.value.length+'/10';
+      $('#save-btn').disabled=!e.target.value.trim();
+    });
+    $('#name-in').addEventListener('keydown', e=>{ if(e.key==='Enter') UI.saveName(); });
     $('#mute').addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); });
     UI.showStart();
   }
@@ -1525,7 +1689,7 @@ class Game{
         {scale:1,rotation:0,duration:.34,delay:(i%16)*.012,ease:'back.out(1.7)'}).then()));
   }
 
-  gameOver(){
+  async gameOver(){
     this.setState(State.GAME_OVER);
     AudioFX.over();
     const final=Score.score;
@@ -1534,6 +1698,7 @@ class Game{
     if(isNew) Cookie.set('nc-best', final, 365);
     const best=Math.max(prev,final);
     UI.renderBest(best);
+    const list=await LB.load();
     const W=N*CFG.cell;
     for(let i=0;i<6;i++){
       gsap.delayedCall(.12+i*.15,()=>{
@@ -1544,7 +1709,7 @@ class Game{
       });
     }
     if(isNew) gsap.delayedCall(.4,()=>particles.confetti(W/2,W*.3,54,1.9));
-    gsap.delayedCall(isNew?1.05:.7,()=>UI.showGameOver(final,best,isNew));
+    gsap.delayedCall(isNew?1.05:.7,()=>UI.showGameOver(final,best,isNew,list));
   }
 
   /* 10s stall guard: bounce the available combo, cost 1 move */

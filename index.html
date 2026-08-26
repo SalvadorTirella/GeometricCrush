@@ -1322,12 +1322,19 @@ class Game{
         const r=(k/N)|0, c=k%N;
         if(!planSet.has(k) && g[r][c]) victims.push(g[r][c]);
       });
-      await Anim.destroy(victims,{cx,cy,combo:depth});
-      victims.forEach(t=>{ g[t.r][t.c]=null; });
-
+      // forge fresh specials first so a chained blast can't silently eat the reward
+      const protect=new Set();
       if(plans.length){
-        plans.forEach(p=>{ const t=g[p.r][p.c]; if(t) Special.morph(t,p.kind); });
+        plans.forEach(p=>{ const t=g[p.r][p.c]; if(t){ Special.morph(t,p.kind); protect.add(t); } });
         AudioFX.special();
+      }
+      // any special swept into the match (or hit by the chain) detonates — nothing vanishes silently
+      const chain=await this.detonateChain(victims, cx, cy, depth, protect);
+      const extra=chain.length-victims.length;
+      if(extra>0){
+        const pts=extra*10*depth;
+        Score.add(pts);
+        UI.floatText(cx,cy-CFG.cell*.9,'CHAIN +'+pts,{color:'#00e5ff',size:16,dur:.9});
       }
 
       await Gravity.apply(this.board);
@@ -1337,37 +1344,82 @@ class Game{
     Combo.reset();
   }
 
+  /* tiles a special clears when it fires (excludes itself) */
+  specialTargets(t){
+    const g=this.board.grid;
+    if(t.special==='bomb'){
+      const counts=Array(6).fill(0);
+      this.board.all().forEach(x=>{ if(x.type>=0) counts[x.type]++; });
+      let col=0; for(let i=1;i<6;i++) if(counts[i]>counts[col]) col=i;
+      t._bombColor=col;
+      return this.board.all().filter(x=>x.type===col && x!==t);
+    }
+    const out=[];
+    if(t.special==='lineH') for(let c=0;c<N;c++){ const v=g[t.r][c]; if(v && v!==t) out.push(v); }
+    else                    for(let r=0;r<N;r++){ const v=g[r][t.c]; if(v && v!==t) out.push(v); }
+    return out;
+  }
+  /* one special firing: beam / rings / flash / burst + sound */
+  fireSpecialFX(s){
+    const [x,y]=center(s);
+    if(s.special==='bomb'){
+      const col = s._bombColor!=null ? TYPES[s._bombColor].color : '#00e5ff';
+      ring(x,y,'#ffffff',{to:9.5,dur:.7});
+      ring(x,y,col,{to:7,dur:.6,delay:.06});
+      ring(x,y,'#ffffff',{to:4.6,dur:.5,delay:.12});
+      flashBoard();
+      UI.floatText(x,y-CFG.cell,'COLOR CRUSH',{color:'#ffffff',size:20,dur:1.1});
+      particles.burst(x,y,'#ffffff',24,2.3);
+      particles.burst(x,y,col,16,1.7);
+    }else{
+      Anim.beam(s);
+      ring(x,y,s.color,{to:4.2,dur:.45});
+      particles.burst(x,y,'#ffffff',18,1.8);
+      particles.burst(x,y,s.color,12,1.4);
+    }
+    AudioFX.bomb();
+  }
+  /* chain reaction: every special hit by the blast also fires (BFS, loop-safe) */
+  async detonateChain(seeds, cx, cy, combo, protect){
+    const g=this.board.grid;
+    protect = protect || new Set();
+    const fired=new Set();
+    const cleared=new Set();
+    const order=[];
+    seeds.forEach(s=>{
+      if(!s || cleared.has(s)) return;
+      cleared.add(s);
+      if(s.special && !fired.has(s)){ fired.add(s); order.push(s); }
+    });
+    for(let i=0;i<order.length;i++){
+      const s=order[i];
+      for(const v of this.specialTargets(s)){
+        if(protect.has(v) || cleared.has(v)) continue;
+        cleared.add(v);
+        if(v.special && !fired.has(v)){ fired.add(v); order.push(v); }
+      }
+    }
+    for(let i=0;i<order.length;i++){
+      if(i>0) await wait(130);
+      this.fireSpecialFX(order[i]);
+      this.shake(10+Math.min(i,4)*2);
+    }
+    const victims=[...cleared];
+    await Anim.destroy(victims,{cx,cy,wave:true,combo});
+    victims.forEach(v=>{ g[v.r][v.c]=null; });
+    return victims;
+  }
+
   async activateSpecial(t){
     if(this.state!==State.PLAYING || !t.special) return;
     this.setState(State.RESOLVING);
     const [ox,oy]=center(t);
     await Anim.charge(t);
-    AudioFX.bomb();
     const g=this.board.grid;
-    let victims=[];
-    if(t.special==='bomb'){
-      const counts=Array(6).fill(0);
-      this.board.all().forEach(x=>{ if(x.type>=0) counts[x.type]++; });
-      let col=0; for(let i=1;i<6;i++) if(counts[i]>counts[col]) col=i;
-      victims=this.board.all().filter(x=>x.type===col || x===t);
-      ring(ox,oy,'#ffffff',{to:9.5,dur:.7});
-      ring(ox,oy,TYPES[col].color,{to:7,dur:.6,delay:.06});
-      ring(ox,oy,'#ffffff',{to:4.6,dur:.5,delay:.12});
-      flashBoard();
-      UI.floatText(ox,oy-CFG.cell,'COLOR CRUSH',{color:'#ffffff',size:20,dur:1.1});
-    }else{
-      const horiz=t.special==='lineH';
-      if(horiz) for(let c=0;c<N;c++) victims.push(g[t.r][c]);
-      else      for(let r=0;r<N;r++) victims.push(g[r][t.c]);
-      victims=victims.filter(Boolean);
-      Anim.beam(t);
-      ring(ox,oy,t.color,{to:4.2,dur:.45});
-    }
-    particles.burst(ox,oy,'#ffffff',24,2.3);
-    particles.burst(ox,oy,t.color,16,1.7);
-    this.shake(11);
-    await Anim.destroy(victims,{cx:ox,cy:oy,wave:true,combo:2});
-    victims.forEach(v=>{ g[v.r][v.c]=null; });
+    const chain=await this.detonateChain([t], ox, oy, 2, null);
+    const pts=chain.length*20;
+    Score.add(pts);
+    UI.floatText(ox,oy,'+'+pts,{color:'#ffb300',size:22});
     await Gravity.apply(this.board);
     await this.resolve(Match.find(g), null);
     await this.endTurn();

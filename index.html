@@ -140,7 +140,7 @@ button{ font:inherit; }
    BOARD — shell, cells, fx layer
    ════════════════════════════════════════════════════════════ */
 #stage{ position:relative; z-index:2; flex:1; min-height:0; display:flex; align-items:center;
-  justify-content:center; touch-action:none; }
+  justify-content:center; touch-action:none; padding:6px 12px 12px; }
 #shell{ position:relative; padding:2px;
   background:linear-gradient(155deg, rgba(0,229,255,.85), rgba(157,92,255,.5) 45%, rgba(255,47,210,.75) 90%);
   clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
@@ -1264,7 +1264,9 @@ class Game{
 
   resize(){
     const st=$('#stage');
-    const w=st.clientWidth-14, h=st.clientHeight-14;
+    const SHELL=24; /* shell border + inner padding, per side */
+    const EDGE=10;  /* guaranteed minimum gap to the screen edge, per side */
+    const w=st.clientWidth -SHELL-EDGE*2, h=st.clientHeight-SHELL-EDGE*2;
     CFG.cell=Math.max(28, Math.floor(Math.min(w,h)/N));
     const size=CFG.cell*N;
     boardEl.style.width=size+'px'; boardEl.style.height=size+'px';

@@ -359,7 +359,7 @@ button{ font:inherit; }
       </div>
       <ul class="how">
         <li>Drag a gem — or tap two neighbours — to swap. Line up <b class="cy">3+</b> to crush.</li>
-        <li>Match <b class="mg">4</b> → LINE BOMB · Match <b class="mg">5</b> → COLOR BOMB.</li>
+        <li>Match <b class="mg">4</b> → LINE BOMB · <b class="mg">5+ gems</b> in one shape (straight 5, or combined L / T like 3H+3V) → COLOR BOMB.</li>
         <li><b class="am">Double-click / double-tap</b> a power gem to detonate it.</li>
         <li><b class="lm">25 moves</b>. Matches of 4+ grant <b class="lm">+2 bonus moves</b>; cascades multiply score.</li>
         <li>Stall for <b class="cy">10s</b> and the grid bounces a combo for you — costing <b class="cr">−1 move</b>. Best score is kept in a browser cookie.</li>
@@ -948,22 +948,63 @@ const Match = {
 
 /* ─────────────────────────── SPECIAL ────────────────────────── */
 const Special = {
+  /* Group overlapping runs into clusters (L / T / + shapes) and reward:
+     • cluster of 5+ unique cells  → COLOR BOMB (straight 5+, or combined 3H+3V, 4+3, ...)
+     • straight run of exactly 4   → LINE BOMB (orientation = run direction)       */
   plan(runs,hint){
     const plans=[], taken=new Set();
     const sorted=[...runs].sort((a,b)=>b.len-a.len);
+    // merge runs that share at least one cell
+    const clusters=[];
     for(const run of sorted){
-      if(run.len<4) continue;
+      const keys=run.cells.map(([r,c])=>r*N+c);
+      const hits=clusters.filter(cl=>keys.some(k=>cl.cellSet.has(k)));
+      if(!hits.length){
+        clusters.push({runs:[run], cellSet:new Set(keys)});
+      }else{
+        const main=hits[0];
+        main.runs.push(run);
+        keys.forEach(k=>main.cellSet.add(k));
+        for(let i=1;i<hits.length;i++){
+          hits[i].runs.forEach(r2=>main.runs.push(r2));
+          hits[i].cellSet.forEach(k=>main.cellSet.add(k));
+          clusters.splice(clusters.indexOf(hits[i]),1);
+        }
+      }
+    }
+    for(const cl of clusters){
+      const total=cl.cellSet.size;
+      const maxLen=Math.max(...cl.runs.map(r=>r.len));
+      let kind=null;
+      if(total>=5) kind='bomb';
+      else if(maxLen>=4){
+        const long=cl.runs.find(r=>r.len>=4);
+        kind = long.dir==='H' ? 'lineH' : 'lineV';
+      }
+      if(!kind) continue;
+      // pick pivot: intersection cell > swapped tile (hint) > middle of longest run
       let pivot=null;
-      if(hint){
-        pivot = run.cells.find(([r,c]) =>
+      if(kind==='bomb'){
+        const counts=new Map();
+        cl.runs.forEach(run=>run.cells.forEach(([r,c])=>{
+          const k=r*N+c; counts.set(k,(counts.get(k)||0)+1);
+        }));
+        let inter=null, best=1;
+        counts.forEach((n,k)=>{ if(n>best){ best=n; inter=k; } });
+        if(inter!=null) pivot=[(inter/N)|0, inter%N];
+      }
+      if(!pivot && hint){
+        pivot = cl.runs.flatMap(r=>r.cells).find(([r,c]) =>
           (r===hint.a.r && c===hint.a.c) || (r===hint.b.r && c===hint.b.c)) || null;
       }
-      if(!pivot) pivot = run.cells[(run.len/2)|0];
+      if(!pivot){
+        const long=cl.runs.reduce((a,b)=>b.len>a.len?b:a);
+        pivot=long.cells[(long.len/2)|0];
+      }
       const key=pivot[0]*N+pivot[1];
       if(taken.has(key)) continue;
       taken.add(key);
-      plans.push({ r:pivot[0], c:pivot[1],
-        kind: run.len>=5 ? 'bomb' : (run.dir==='H' ? 'lineH' : 'lineV') });
+      plans.push({ r:pivot[0], c:pivot[1], kind });
     }
     return plans;
   },

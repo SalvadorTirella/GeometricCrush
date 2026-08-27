@@ -211,29 +211,23 @@ input, select, textarea{ font-size:16px; }
 .s-hole::after{ content:''; position:absolute; inset:29%; border-radius:50%; background:#000;
   box-shadow:0 0 14px 4px rgba(176,107,255,.7), inset 0 0 9px rgba(176,107,255,.5); }
 @keyframes holeSpin{ to{ transform:rotate(360deg); } }
-/* sun — golden star with rotating rays (unlocks at 20K · 3 suns collapse into a black hole) */
-.s-sun{ border-radius:50%;
-  background:radial-gradient(circle at 36% 30%, #fffde8 0 18%, #ffd94a 45%, #ffb300 75%, #e08900 100%); }
-.s-sun::before{ content:''; position:absolute; inset:-26%; border-radius:50%;
+/* sun — compact hot-orange star with rotating corona (20K · 3 suns collapse into a black hole) */
+.s-sun{ inset:11%; border-radius:50%;
+  background:radial-gradient(circle at 36% 30%, #fff8dc 0 16%, #ffe373 34%, #ffb52e 60%, #f07f13 100%); }
+.s-sun::before{ content:''; position:absolute; inset:-16%; border-radius:50%;
   background:conic-gradient(from 0deg,
-    transparent 0 10deg, #ffd94a 10deg 16deg, transparent 16deg 40deg,
-    #ffb300 40deg 46deg, transparent 46deg 70deg, #ffd94a 70deg 76deg, transparent 76deg 100deg,
-    #ffb300 100deg 106deg, transparent 106deg 130deg, #ffd94a 130deg 136deg, transparent 136deg 160deg,
-    #ffb300 160deg 166deg, transparent 166deg 190deg, #ffd94a 190deg 196deg, transparent 196deg 220deg,
-    #ffb300 220deg 226deg, transparent 226deg 250deg, #ffd94a 250deg 256deg, transparent 256deg 280deg,
-    #ffb300 280deg 286deg, transparent 286deg 310deg, #ffd94a 310deg 316deg, transparent 316deg 340deg,
-    #ffb300 340deg 346deg, transparent 346deg 360deg);
-  -webkit-mask:radial-gradient(circle, transparent 54%, #000 56%);
-          mask:radial-gradient(circle, transparent 54%, #000 56%);
+    transparent 0 9deg, #ffd166 9deg 15deg, transparent 15deg 40deg,
+    #ff8c1a 40deg 46deg, transparent 46deg 70deg, #ffd166 70deg 76deg, transparent 76deg 100deg,
+    #ff8c1a 100deg 106deg, transparent 106deg 130deg, #ffd166 130deg 136deg, transparent 136deg 160deg,
+    #ff8c1a 160deg 166deg, transparent 166deg 190deg, #ffd166 190deg 196deg, transparent 196deg 220deg,
+    #ff8c1a 220deg 226deg, transparent 226deg 250deg, #ffd166 250deg 256deg, transparent 256deg 280deg,
+    #ff8c1a 280deg 286deg, transparent 286deg 310deg, #ffd166 310deg 316deg, transparent 316deg 340deg,
+    #ff8c1a 340deg 346deg, transparent 346deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%);
+          mask:radial-gradient(circle, transparent 56%, #000 58%);
   animation:holeSpin 5s linear infinite; }
 .s-sun::after{ content:''; position:absolute; inset:0; border-radius:50%;
-  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.95), transparent 34%); }
-/* unstable sun (hard mode) — red alarm halo + shrinking fuse ring */
-.tile.unstable .shape.s-sun::after{ background:radial-gradient(circle at 50% 50%, rgba(255,60,60,.55), transparent 60%); }
-.tile.unstable::after{ content:''; position:absolute; inset:-6%; border-radius:14px; pointer-events:none;
-  border:2px solid #ff4d5e; box-shadow:0 0 16px #ff4d5e, inset 0 0 12px rgba(255,77,94,.4);
-  animation:unstablePulse .5s ease-in-out infinite; }
-@keyframes unstablePulse{ 0%,100%{ opacity:.55; transform:scale(1); } 50%{ opacity:1; transform:scale(1.06); } }
+  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.9), transparent 30%); }
 /* void block — disabled cell that blocks matches and swaps */
 .tile.void .inner{ animation:none; }
 .tile.void .shape{ filter:grayscale(1) brightness(.28) !important; opacity:.85; }
@@ -630,8 +624,8 @@ body.q-noglow .tag{ text-shadow:none; }
 /* per-mode accent glow */
 .cosmic-card[data-diff="planet"]:hover{ box-shadow:inset 0 0 0 1px rgba(163,255,18,.6), 0 14px 44px rgba(163,255,18,.16); }
 .cosmic-card[data-diff="planet"] .csub{ color:var(--lime); text-shadow:0 0 12px rgba(163,255,18,.6); }
-.cosmic-card[data-diff="sun"]:hover{ box-shadow:inset 0 0 0 1px rgba(255,217,74,.6), 0 14px 44px rgba(255,217,74,.16); }
-.cosmic-card[data-diff="sun"] .csub{ color:#ffd94a; text-shadow:0 0 12px rgba(255,217,74,.6); }
+.cosmic-card[data-diff="sun"]:hover{ box-shadow:inset 0 0 0 1px rgba(255,166,43,.6), 0 14px 44px rgba(255,166,43,.16); }
+.cosmic-card[data-diff="sun"] .csub{ color:#ffa62b; text-shadow:0 0 12px rgba(255,166,43,.6); }
 .cosmic-card[data-diff="hole"]:hover{ box-shadow:inset 0 0 0 1px rgba(176,107,255,.65), 0 14px 44px rgba(176,107,255,.2); }
 .cosmic-card[data-diff="hole"] .csub{ color:#c99aff; text-shadow:0 0 12px rgba(176,107,255,.65); }
 /* celestial bodies inside cards */
@@ -644,20 +638,20 @@ body.q-noglow .tag{ text-shadow:none; }
   box-shadow:0 0 14px rgba(190,255,205,.4); }
 .vis-planet::after{ content:''; position:absolute; inset:0; border-radius:50%;
   background:radial-gradient(circle at 66% 20%, rgba(255,255,255,.85), transparent 30%); }
-.vis-sun{ border-radius:50%;
-  background:radial-gradient(circle at 36% 30%, #fffde8 0 18%, #ffd94a 45%, #ffb300 75%, #e08900 100%);
-  box-shadow:0 0 40px rgba(255,217,74,.5); }
-.vis-sun::before{ content:''; position:absolute; inset:-24%; border-radius:50%;
-  background:conic-gradient(from 0deg, transparent 0 12deg, #ffd94a 12deg 20deg, transparent 20deg 45deg,
-    #ffb300 45deg 53deg, transparent 53deg 78deg, #ffd94a 78deg 86deg, transparent 86deg 111deg,
-    #ffb300 111deg 119deg, transparent 119deg 144deg, #ffd94a 144deg 152deg, transparent 152deg 177deg,
-    #ffb300 177deg 185deg, transparent 185deg 210deg, #ffd94a 210deg 218deg, transparent 218deg 243deg,
-    #ffb300 243deg 251deg, transparent 251deg 276deg, #ffd94a 276deg 284deg, transparent 284deg 309deg,
-    #ffb300 309deg 317deg, transparent 317deg 342deg, #ffd94a 342deg 350deg, transparent 350deg 360deg);
+.vis-sun{ inset:8%; border-radius:50%;
+  background:radial-gradient(circle at 36% 30%, #fff8dc 0 16%, #ffe373 34%, #ffb52e 60%, #f07f13 100%);
+  box-shadow:0 0 40px rgba(255,166,43,.45); }
+.vis-sun::before{ content:''; position:absolute; inset:-18%; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 12deg, #ffd166 12deg 20deg, transparent 20deg 45deg,
+    #ff8c1a 45deg 53deg, transparent 53deg 78deg, #ffd166 78deg 86deg, transparent 86deg 111deg,
+    #ff8c1a 111deg 119deg, transparent 119deg 144deg, #ffd166 144deg 152deg, transparent 152deg 177deg,
+    #ff8c1a 177deg 185deg, transparent 185deg 210deg, #ffd166 210deg 218deg, transparent 218deg 243deg,
+    #ff8c1a 243deg 251deg, transparent 251deg 276deg, #ffd166 276deg 284deg, transparent 284deg 309deg,
+    #ff8c1a 309deg 317deg, transparent 317deg 342deg, #ffd166 342deg 350deg, transparent 350deg 360deg);
   -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%); mask:radial-gradient(circle, transparent 56%, #000 58%);
   animation:holeSpin 6s linear infinite; }
 .vis-sun::after{ content:''; position:absolute; inset:0; border-radius:50%;
-  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.95), transparent 34%); }
+  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.9), transparent 30%); }
 .vis-hole{ border-radius:50%;
   background:radial-gradient(circle at 50% 50%, #000 0 30%, #1a0b30 40%, #43206e 60%, rgba(67,32,110,0) 76%);
   box-shadow:0 0 40px rgba(176,107,255,.4); }
@@ -749,7 +743,7 @@ body.q-noglow .tag{ text-shadow:none; }
         <i style="--c:#ff4d5e"><span class="shape s-hexagon t4"></span></i>
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
         <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>10K</em></i>
-        <i class="lk" style="--c:#ffd94a"><span class="shape s-sun t7"></span><em>20K</em></i>
+        <i class="lk" style="--c:#ffa62b"><span class="shape s-sun t7"></span><em>20K</em></i>
         <i class="lk" style="--c:#b3bac9"><span class="shape s-meteor t8"></span><em>30K</em></i>
       </div>
       <ul class="how">
@@ -860,10 +854,10 @@ body.q-noglow .tag{ text-shadow:none; }
         <span class="ctext">
           <span class="cname">AGUJERO NEGRO</span>
           <span class="csub">DIFÍCIL</span>
-          <span class="cdesc">Soles inestables absorben las casillas vecinas si no los combinas rápido. Punitivo, táctico y sin piedad.</span>
+          <span class="cdesc">El vacío colapsa celdas con frecuencia, la pista cuesta el doble y casi no hay ayuda del cielo. Punitivo, táctico y sin piedad.</span>
           <span class="cmods">
             <span>⏱ Pista a los 7s · penaliza −2 jugadas</span>
-            <span>☀ Soles inestables desde el inicio</span>
+            <span>☄ Casi sin ayuda de meteoritos</span>
             <span>⬚ Anomalías más frecuentes</span>
           </span>
         </span>
@@ -930,7 +924,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.3.1';  // poderes solo se activan al tocarlos o al ser destruidos + bombas lineales apiladas (1→3→5 líneas)
+const APP_VERSION = 'v1.4.1';  // selector de dificultad cósmico + soles naranjosos que solo colapsan al combinarse (sin auto-explosión)
 const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000, voidMs:18000 };
 
 /* ══ COSMIC DIFFICULTY — each body rewrites the rules of the board ══
@@ -939,15 +933,15 @@ const DIFFS = {
   planet: { key:'planet', label:'PLANETA', mult:1/3,
     idleMs:12000, hintPenalty:1, startMoves:14, bonusMoves:3,
     meteorEvery:[14000,32000], meteorFromStart:true,
-    anomalies:false, anomalyEvery:null, unstableSuns:false },
+    anomalies:false, anomalyEvery:null },
   sun: { key:'sun', label:'SOL', mult:2/3,
     idleMs:10000, hintPenalty:1, startMoves:10, bonusMoves:2,
     meteorEvery:[30000,120000], meteorFromStart:false,
-    anomalies:true, anomalyEvery:[120000,180000], unstableSuns:false },
+    anomalies:true, anomalyEvery:[120000,180000] },
   hole: { key:'hole', label:'AGUJERO NEGRO', mult:1,
     idleMs:7000, hintPenalty:2, startMoves:8, bonusMoves:2,
     meteorEvery:[30000,120000], meteorFromStart:false,
-    anomalies:true, anomalyEvery:[90000,150000], unstableSuns:true }
+    anomalies:true, anomalyEvery:[75000,130000] }
 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -958,7 +952,7 @@ const TYPES = [
   { color:'#ff4d5e', shape:'hexagon'  },
   { color:'#9d5cff', shape:'star'     },
   { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 10K */
-  { color:'#ffd94a', shape:'sun'      },  /* type 7 — unlocks at 20K · 3 suns collapse into a black hole */
+  { color:'#ffa62b', shape:'sun'      },  /* type 7 — unlocks at 20K · 3 suns collapse into a black hole */
   { color:'#b3bac9', shape:'meteor'   },  /* type 8 — 30K · gray rock, only falls from the sky in storms */
 ];
 const RANKS = [[25000,'LEYENDA NEÓN'],[16000,'SOBRECARGA'],[10000,'ALTO VOLTAJE'],[6000,'SOBRETENSIÓN'],[3000,'CHISPA'],[0,'ESTÁTICA']];
@@ -1704,7 +1698,7 @@ const Score = {
     const prev=this.score;
     this.score+=Math.round(n*this.mult); UI.renderScore(this.score); UI.popScore();
     if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('AGUJERO NEGRO DESBLOQUEADO','#b06bff');
-    if(prev<CFG.sunAt && this.score>=CFG.sunAt) UI.unlockFX('SOL DESBLOQUEADO','#ffd94a');
+    if(prev<CFG.sunAt && this.score>=CFG.sunAt) UI.unlockFX('SOL DESBLOQUEADO','#ffa62b');
     if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('TORMENTA DE METEOROS DESBLOQUEADA','#b3bac9','ROCAS ARDIENTES CAERÁN DEL CIELO');
   },
 };
@@ -2032,7 +2026,7 @@ const Special = {
       }else if(clType===6){                           /* black holes: match → one survives + 1 particle */
         kind = 'keep';
       }else if(clType===7){                           /* moons: match → one survives + 1 particle */
-        kind = 'keepMoon';
+        kind = 'keepSun';                       /* suns: combining 3 collapses them into a hole */
       }else{
         const maxLen=Math.max(...cl.runs.map(r=>r.len));
         if(total>=5) kind='bomb';
@@ -2154,7 +2148,6 @@ const Special = {
   /* 3 matched suns collapse into a black hole (0 particles) */
   sunToHole(t){
     t.type=6; t.special=null; t.orb=0;
-    t.el.classList.remove('unstable');
     const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
     t.shape.className='shape s-hole t6';
     t.paint();
@@ -2290,7 +2283,6 @@ class Game{
     this.diff=DIFFS.sun;
     this.idleAt=0; this.hinting=false; this.playMs=0; this.settingsOpen=false;
     this.nextMeteor=null; this.meteorBusy=false; this.nextVoid=null;
-    this.unstable=null; this.unstableUntil=0;
     setInterval(()=>this.tickIdle(), 450);
     setInterval(()=>this.emitSparks(), 140);
   }
@@ -2451,19 +2443,18 @@ class Game{
     Score.startMoves=this.diff.startMoves;
     Score.reset(); Combo.reset();
     this.playMs=0; this.nextMeteor=null; this.meteorBusy=false;
-    this.nextVoid=null; this.unstable=null; this.unstableUntil=0;
+    this.nextVoid=null;
     UI.renderCrush(this);
     this.input.deselect();
     this.board.generate();
     AudioFX.deal();
     await this.dealIn();
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell/2;
-    const acc=this.diff.key==='hole'?'#b06bff':this.diff.key==='planet'?'#a3ff12':'#ffd94a';
+    const acc=this.diff.key==='hole'?'#b06bff':this.diff.key==='planet'?'#a3ff12':'#ffa62b';
     ring(W,H,acc,{from:.5,to:6.2,dur:.7});
     particles.burst(W,H,acc,16,1.3);
     UI.floatText(W,H-CFG.cell*.4,'ÓRBITA '+this.diff.label,{color:acc,size:19,dur:1.1});
     this.setState(State.PLAYING);
-    if(this.diff.unstableSuns) gsap.delayedCall(2.5,()=>this.spawnUnstable());
   }
 
   /* show the cosmic difficulty selector instead of starting directly */
@@ -2629,7 +2620,7 @@ class Game{
           if(p.kind==='blast') return;              /* blasts detonate instantly, no morph */
           const t=g[p.r][p.c]; if(!t) return;
           protect.add(t);
-          if(p.kind==='keep' || p.kind==='keepMoon'){
+          if(p.kind==='keep' || p.kind==='keepSun'){
             /* survivor POOLS every particle from all merged tiles, +1 for the union */
             let sum=0;
             (p.cells||[]).forEach(k=>{
@@ -2641,7 +2632,7 @@ class Game{
             const [x,y]=center(t);
             ring(x,y,t.color,{from:.5,to:2.4,dur:.45});
             particles.implode(x,y,t.color,12);
-            if(p.kind==='keepMoon'){
+            if(p.kind==='keepSun'){
               Special.sunToHole(t);                   /* 3 matched suns collapse into a black hole */
             }else if(p.kind==='keep' && n>=3){
               const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
@@ -2870,7 +2861,7 @@ class Game{
     gsap.delayedCall(isNew?1.05:.7,()=>UI.showGameOver(final,best,isNew,list));
   }
 
-  /* stall guard + periodic anomalies + unstable suns — all driven by the chosen orbit */
+  /* stall guard + periodic anomalies — all driven by the chosen orbit */
   async tickIdle(){
     if(this.state===State.PLAYING){
       this.playMs+=450;
@@ -2895,14 +2886,7 @@ class Game{
           this.spawnVoid();
         }
       }
-      /* unstable suns (hard): spawn one, and when its fuse runs out it absorbs */
-      if(d.unstableSuns && !this.settingsOpen){
-        const u=this.unstable;
-        /* if the unstable sun was matched/transformed, drop the reference */
-        if(u && (u.type!==7 || this.board.grid[u.r][u.c]!==u)) this.unstable=null;
-        if(!this.unstable) this.spawnUnstable();
-        else if(performance.now()>this.unstableUntil && !this.hinting) this.unstableAbsorb();
-      }
+
     }
     if(this.state!==State.PLAYING || this.hinting || this.settingsOpen) return;
     if(performance.now()-this.idleAt < this.diff.idleMs) return;
@@ -2966,49 +2950,6 @@ class Game{
         }
       });
     });
-  }
-
-  /* HARD MODE: mark a sun as unstable — if not matched in time it devours its neighbours */
-  spawnUnstable(){
-    const g=this.board.grid;
-    let cands=this.board.all().filter(t=>t.type===7 && !t.special && !t.void);
-    let t;
-    if(cands.length) t=cands[(Math.random()*cands.length)|0];
-    else{
-      const normals=this.board.all().filter(x=>x.type>=0&&x.type<=5&&!x.special&&!x.void);
-      if(!normals.length) return;
-      t=normals[(Math.random()*normals.length)|0];
-      t.type=7; t.shape.className='shape s-sun t7'; t.paint();
-    }
-    t.el.classList.add('unstable');
-    this.unstable=t;
-    this.unstableUntil=performance.now()+10000;
-    const [x,y]=center(t);
-    ring(x,y,'#ff4d5e',{from:.4,to:2.6,dur:.5});
-    UI.floatText(x,y-CFG.cell*.9,'SOL INESTABLE',{color:'#ff4d5e',size:13,dur:1.2});
-    AudioFX.warn();
-  }
-  async unstableAbsorb(){
-    const t=this.unstable; this.unstable=null;
-    const g=this.board.grid;
-    if(!t || this.state!==State.PLAYING || g[t.r][t.c]!==t) return;
-    t.el.classList.remove('unstable');
-    this.setState(State.RESOLVING);
-    const [cx,cy]=center(t);
-    UI.floatText(cx,cy,'¡ABSORCIÓN!',{color:'#ff4d5e',size:18,dur:1});
-    const victims=[t];
-    [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>{
-      const rr=t.r+dr, cc=t.c+dc;
-      if(rr>=0&&rr<ROWS&&cc>=0&&cc<COLS&&g[rr][cc]) victims.push(g[rr][cc]);
-    });
-    ring(cx,cy,'#ff4d5e',{from:.4,to:4.2,dur:.5});
-    particles.implode(cx,cy,'#ff4d5e',14);
-    this.shake(9); AudioFX.boom();
-    await Anim.destroy(victims,{cx,cy,wave:false,combo:1});
-    victims.forEach(v=>{ if(g[v.r][v.c]===v) g[v.r][v.c]=null; });
-    await Gravity.apply(this.board);
-    await this.resolve(Match.find(g), null);
-    await this.endTurn();
   }
 
   shake(power){

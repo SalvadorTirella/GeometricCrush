@@ -559,7 +559,7 @@ button{ font:inherit; }
 /* ─────────────────────────── GLOBAL ─────────────────────────── */
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
-const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
+const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:1000, moonAt:2000, meteorAt:3000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
   { color:'#00e5ff', shape:'circle'   },

@@ -48,18 +48,52 @@ Con LOCAL funciona igual, pero cada dispositivo ve su propio Top 5.
    >
    > Copiá la URL de la cabecera `Location:` de la respuesta.
 
-2. Abrí `index.html`, buscá al inicio del `<script>` y pegá esa URL:
+2. Abrí `index.html`, buscá al inicio del `<script>` y pegá esa URL. El juego acepta
+   **ambos formatos** (la URL de la API y la del visor `jsonblob.com/<id>`) y la
+   normaliza solo:
 
    ```js
    const JSONBLOB_URL = 'https://jsonblob.com/api/jsonBlob/1234567890123456789';
    ```
 
-3. Listo: el tag del ranking pasa a decir **JSON** y todos los que jueguen con tu link
+3. **Verificá que el blob sea público** (importante: si lo creaste con tu cuenta puede
+   ser privado y responder 404 al resto del mundo).
+
+   **Desde la consola del navegador** (la más rápida): abrí el juego, `F12` → pestaña
+   *Console*, y ejecutá:
+
+   ```js
+   NC_LB_TEST()
+   ```
+
+   Si todo anda vas a ver `✔ GET ok`, `✔ PUT ok` y `✔ blob restaurado — TODO FUNCIONA`.
+   La prueba escribe una entrada temporal y después deja el blob exactamente como estaba.
+
+   **Con Postman:**
+
+   - **Leer (GET):** creá una request `GET` a
+     `https://jsonblob.com/api/jsonBlob/TU_ID` y mandala.
+     → debe responder **200 OK** con el contenido (`[]` al principio).
+     → si responde **404**, el blob no existe o es privado.
+   - **Guardar (PUT):** creá una request `PUT` a la misma URL, en *Headers* agregá
+     `Content-Type: application/json` y `Accept: application/json`, y en *Body* →
+     *raw* / *JSON* pegá:
+
+     ```json
+     [{"name":"POSTMAN","score":9999}]
+     ```
+
+     → debe responder **200 OK**. Repetí el GET: ahora tiene que devolver esa entrada.
+     (Terminá haciendo otro PUT con `[]` para limpiar tu prueba.)
+
+4. Listo: el tag del ranking pasa a decir **JSON** y todos los que jueguen con tu link
    ven y alimentan el mismo Top 5.
 
-> Nota honesta: jsonblob es un servicio gratuito sin garantías; quien conozca la URL del
-> blob podría editarlo, y dos guardados simultáneos podrían pisarse (rarísimo con pocos
-> jugadores). Para algo más robusto usá la opción 🅱️.
+> Nota honesta: jsonblob es un servicio gratuito sin garantías y hoy pide cuenta para
+> guardar — si tu blob queda privado el ranking no funciona para el resto (el test de
+> arriba lo detecta). Además quien conozca la URL del blob podría editarlo, y dos
+> guardados simultáneos podrían pisarse (rarísimo con pocos jugadores).
+> Para algo robusto y realmente compartido usá la opción 🅱️ (Supabase).
 
 ---
 

@@ -523,8 +523,17 @@ const JSONBLOB_URL = '';
 const SUPA_URL = '';
 const SUPA_KEY = '';
 
+/* accepts both the viewer URL (jsonblob.com/<id>) and the API URL
+   (jsonblob.com/api/jsonBlob/<id>) — normalized automatically */
+const LB_URL = (()=>{
+  const u=(JSONBLOB_URL||'').trim();
+  if(!u) return '';
+  const m=u.match(/jsonblob\.com\/(?:api\/jsonBlob\/)?([0-9a-fA-F-]+)/i);
+  return m ? 'https://jsonblob.com/api/jsonBlob/'+m[1] : u;
+})();
+
 const LB = {
-  mode:(JSONBLOB_URL) ? 'JSON' : (SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
+  mode:(LB_URL) ? 'JSON' : (SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
   hasRemote(){ return this.mode!=='LOCAL'; },
   _hd(){ return { apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }; },
 
@@ -554,7 +563,7 @@ const LB = {
       if(!r.ok){ this.err='http'; throw new Error(r.status); }
       return await r.json();
     }
-    const r=await fetch(JSONBLOB_URL,{headers:{Accept:'application/json'}});
+    const r=await fetch(LB_URL,{headers:{Accept:'application/json'}});
     if(!r.ok){
       this.err = r.status===404 ? 'missing' : 'http';
       console.warn('[NeonCrush] JSON Blob respondió '+r.status+
@@ -578,12 +587,15 @@ const LB = {
     const l=await this._remoteLoad();
     l.push({name,score});
     l.sort((a,b)=>b.score-a.score);
-    const r=await fetch(JSONBLOB_URL,{
+    await this._remotePut(l.slice(0,5));
+  },
+  async _remotePut(list){
+    const r=await fetch(LB_URL,{
       method:'PUT',
       headers:{'Content-Type':'application/json', Accept:'application/json'},
-      body:JSON.stringify(l.slice(0,5))
+      body:JSON.stringify(list)
     });
-    if(!r.ok) throw new Error(r.status);
+    if(!r.ok) throw new Error('PUT '+r.status);
   },
 
   /* ── public API ──
@@ -622,6 +634,31 @@ const LB = {
   qualifies(list,score){
     return score>0 && (list.length<5 || score>list[list.length-1].score);
   }
+};
+
+/* debug helper — in the browser console run:  NC_LB_TEST()  */
+window.NC_LB_TEST = async function(){
+  const log=(...a)=>console.log('%c[NEON-CRUSH]','color:#00e5ff;font-weight:bold',...a);
+  if(LB.mode==='LOCAL'){ log('modo LOCAL — no hay backend configurado en index.html'); return; }
+  log('modo '+LB.mode+' → URL:', LB.mode==='JSON' ? LB_URL : SUPA_URL);
+  let before;
+  try{ before=await LB._remoteLoad(); }
+  catch(e){
+    log('\u2718 GET falló ('+e.message+') → el blob no existe o es privado');
+    log('  crealo en jsonblob.com/editor/json pegando [] — si ya existe, es privado: rehacelo anónimo o usá Supabase (README.md)');
+    return;
+  }
+  log('\u2714 GET ok — ranking actual:', JSON.stringify(before));
+  if(LB.mode!=='JSON'){ log('modo GLOBAL: escritura inserta filas reales, se probó solo lectura'); return; }
+  try{
+    const test=[...before,{name:'TEST',score:1}].sort((a,b)=>b.score-a.score).slice(0,5);
+    await LB._remotePut(test);
+    const after=await LB._remoteLoad();
+    if(!after.some(s=>s.name==='TEST'&&s.score===1)){ log('\u2718 PUT respondió ok pero el dato no quedó guardado'); return; }
+    log('\u2714 PUT ok — escritura funciona');
+    await LB._remotePut(before);
+    log('\u2714 blob restaurado — TODO FUNCIONA, los jugadores ya pueden guardar');
+  }catch(e){ log('\u2718 PUT falló ('+e.message+')'); }
 };
 
 /* ─────────────────────────── STATE ──────────────────────────── */

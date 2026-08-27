@@ -146,9 +146,14 @@ body.settings-open #settings{ color:var(--magenta); filter:drop-shadow(0 0 14px 
    ════════════════════════════════════════════════════════════ */
 #stage{ position:relative; z-index:2; flex:1; min-height:0; display:flex; align-items:center;
   justify-content:center; touch-action:none; padding:6px 12px 12px; }
-/* kills iOS double-tap zoom + 300ms tap delay everywhere interactive */
-html,body{ touch-action:manipulation; }
-button,.btn,#crush,.icon-btn,.tg,.seg-b,.preset{ touch-action:manipulation; }
+/* iOS zoom kill-switch: double-tap zoom dies on EVERY element, and the
+   300ms tap delay disappears. #stage keeps 'none' for drag/swipe, and
+   scrollable panels keep vertical panning. */
+*{ touch-action:manipulation; }
+#stage{ touch-action:none; }
+.panel, #settings-panel, .sp-list{ touch-action:pan-y; }
+/* iOS auto-zooms when focusing inputs under 16px — pinned at 16px */
+input, select, textarea{ font-size:16px; }
 #shell{ position:relative; padding:2px;
   background:linear-gradient(155deg, rgba(0,229,255,.85), rgba(157,92,255,.5) 45%, rgba(255,47,210,.75) 90%);
   clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
@@ -712,7 +717,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.2.2';  // poderes con un solo toque (sin doble-tap-zoom en iOS)
+const APP_VERSION = 'v1.2.3';  // bloqueo total del zoom en iOS (toques rápidos y pellizco)
 const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -2075,6 +2080,9 @@ class Game{
       gsap.from(t.inner,{scale:0,duration:.45,delay:(t.r+t.c)*.022,ease:'back.out(1.7)'}));
     window.addEventListener('resize', ()=>this.resize());
     window.addEventListener('orientationchange', ()=>setTimeout(()=>this.resize(),60));
+    /* Safari-only pinch gestures: block them so the board never zooms */
+    ['gesturestart','gesturechange','gestureend'].forEach(ev=>
+      document.addEventListener(ev, e=>e.preventDefault(), {passive:false}));
     $('#play-btn').addEventListener('click', ()=>this.start());
     $('#again-btn').addEventListener('click', ()=>this.start());
     $('#crush').addEventListener('click', ()=>this.crush());

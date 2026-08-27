@@ -609,12 +609,12 @@ body.q-noglow .tag{ text-shadow:none; }
       </div>
       <ul class="how">
         <li>Arrastra una gema —o toca dos vecinas— para intercambiarlas. Alinea <b class="cy">3+</b> para aplastar.</li>
-        <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR.</li>
+        <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR. Si una BOMBA LINEAL activa a otra en cadena, el haz gana <b class="mg">+2 líneas</b> por bomba extra (3, 5, 7…).</li>
         <li><b class="am">Doble clic / doble toque</b> sobre una gema de poder para detonarla.</li>
         <li><b class="lm">25 jugadas</b>. Los matches de 4+ dan <b class="lm">+2 jugadas extra</b>; las cascadas multiplican los puntos.</li>
         <li>Si te quedas <b class="cy">10s</b> sin jugar, el tablero rebota un combo por ti — a cambio de <b class="cr">−1 jugada</b>. Tu mejor puntaje se guarda en una cookie.</li>
-        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y gana <b class="vh">1 partícula</b> en órbita. Con <b class="vh">4 partículas</b> forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
-        <li>A los <b class="mh">20K pts</b> llegan las LUNAS: al juntar <b class="mh">3</b>, una sobrevive y gana <b class="mh">1 partícula</b>. Con <b class="mh">4 partículas</b> se convierte en un AGUJERO NEGRO.</li>
+        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">doble toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
+        <li>A los <b class="mh">20K pts</b> llegan las LUNAS: al juntar <b class="mh">3</b>, una sobrevive y absorbe las partículas del grupo (+1). Con <b class="mh">4 partículas</b> colapsa en un AGUJERO NEGRO.</li>
         <li>A los <b class="mt">30K pts</b> comienzan las TORMENTAS DE METEORITOS: rocas grises caen al tablero cada 30s–2min. Solo se combinan de a <b class="mt">5+</b> — y su explosión arrasa todo lo que hay alrededor.</li>
       </ul>
       <div class="top5-wrap">
@@ -709,8 +709,8 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.1.1';
-const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:1000, moonAt:2000, meteorAt:3000 };
+const APP_VERSION = 'v1.2.1';  // acumulación de partículas + bombas lineales encadenadas
+const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
   { color:'#00e5ff', shape:'circle'   },
@@ -1554,10 +1554,11 @@ const Anim = {
       fxEl.appendChild(el);
       gsap.to(el,{opacity:0,duration:.32,delay:.24,onComplete:()=>el.remove()});
     };
-    mk(CFG.cell*.56,false);
-    mk(CFG.cell*.2,true);
+    const m=t._lineMult||1;
+    mk(m===1?CFG.cell*.56:m*CFG.cell*.85, false);
+    mk(m===1?CFG.cell*.2 :m*CFG.cell*.3, true);
     const [ox,oy]=center(t);
-    ring(ox,oy,col,{from:.6,to:3,dur:.4});
+    ring(ox,oy,col,{from:.6,to:3+m*.6,dur:.4});
   },
   /* singularity: every victim spirals into the center, shrinking as it's devoured */
   suck(tiles,cx,cy){
@@ -1805,7 +1806,7 @@ const Special = {
       const key=pivot[0]*COLS+pivot[1];
       if(taken.has(key)) continue;
       taken.add(key);
-      plans.push({ r:pivot[0], c:pivot[1], kind });
+      plans.push({ r:pivot[0], c:pivot[1], kind, cells:[...cl.cellSet] });
     }
     return plans;
   },
@@ -1874,22 +1875,23 @@ const Special = {
     }
     t.el.appendChild(orb);
   },
-  /* add ONE orbiting particle to a black hole / moon — returns the new count */
-  addOrbit(t){
-    t.orb=(t.orb||0)+1;
-    let orb=t.el.querySelector('.orbit');
-    if(!orb){
-      orb=document.createElement('div');
-      orb.className='orbit orbit-gem'+(t.type===7?' rev':'');
-      t.el.appendChild(orb);
+  /* rebuild the orbit with exactly n particles (used when a merge pools them all) */
+  setOrbit(t,n){
+    t.orb=n;
+    const old=t.el.querySelector('.orbit'); if(old) old.remove();
+    if(n<=0) return n;
+    const orb=document.createElement('div');
+    orb.className='orbit orbit-gem'+(t.type===7?' rev':'');
+    t.el.appendChild(orb);
+    for(let i=0;i<n;i++){
+      const d=document.createElement('i'); d.className='odot';
+      d.style.setProperty('--a',(360*i/n+(Math.random()*44-22))+'deg');
+      d.style.background=t.color;
+      d.style.boxShadow='0 0 9px '+t.color+', 0 0 2px #fff';
+      orb.appendChild(d);
+      gsap.fromTo(d,{scale:0},{scale:1,duration:.4,delay:i*.05,ease:'back.out(3)'});
     }
-    const d=document.createElement('i'); d.className='odot';
-    d.style.setProperty('--a',((t.orb-1)*90+(Math.random()*44-22))+'deg');
-    d.style.background=t.color;
-    d.style.boxShadow='0 0 9px '+t.color+', 0 0 2px #fff';
-    orb.appendChild(d);
-    gsap.fromTo(d,{scale:0},{scale:1,duration:.4,ease:'back.out(3)'});
-    return t.orb;
+    return n;
   },
   /* a moon that gathered 4 particles collapses into a black hole (0 particles) */
   moonToHole(t){
@@ -2335,21 +2337,30 @@ class Game{
       });
       // forge fresh specials first so a chained blast can't silently eat the reward
       const protect=new Set();
-      const autoVortexes=[];
       if(plans.length){
         plans.forEach(p=>{
           if(p.kind==='blast') return;              /* blasts detonate instantly, no morph */
           const t=g[p.r][p.c]; if(!t) return;
           protect.add(t);
           if(p.kind==='keep' || p.kind==='keepMoon'){
-            /* one survivor absorbs its matched kin and gains ONE orbiting particle */
-            const n=Special.addOrbit(t);
+            /* survivor POOLS every particle from all merged tiles, +1 for the union */
+            let sum=0;
+            (p.cells||[]).forEach(k=>{
+              const rr=(k/COLS)|0, cc=k%COLS;
+              const tt=g[rr][cc];
+              if(tt) sum+=(tt.orb||0);
+            });
+            const n=Special.setOrbit(t, sum+1);
             const [x,y]=center(t);
             ring(x,y,t.color,{from:.5,to:2.4,dur:.45});
             particles.implode(x,y,t.color,12);
-            if(n>=4){
-              if(p.kind==='keepMoon') Special.moonToHole(t);   /* 4 particles → black hole */
-              else{ Special.morph(t,'vortex'); autoVortexes.push(t); }  /* 4 → singularity */
+            if(p.kind==='keepMoon' && n>=4){
+              Special.moonToHole(t);                  /* moon with 4 particles → black hole */
+            }else if(p.kind==='keep' && n>=3){
+              const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
+              Special.morph(t,'vortex');              /* massive black hole → clickable singularity */
+              UI.floatText(x,y-CFG.cell*.9,'AGUJERO MASIVO',{color:'#c99aff',size:15,dur:1.1});
+              UI.floatText(x,y-CFG.cell*.15,'DOBLE TOQUE',{color:'#ffffff',size:10,dur:1.1});
             }else{
               gsap.fromTo(t.inner,{scale:1},{scale:1.3,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
             }
@@ -2375,11 +2386,6 @@ class Game{
       }
       // any special swept into the match (or hit by the chain) detonates — nothing vanishes silently
       const chain=await this.detonateChain(victims, cx, cy, depth, protect, blastAt);
-      // a freshly-forged singularity immediately devours its surroundings
-      for(const av of autoVortexes){
-        const [ox,oy]=center(av);
-        await this.detonateChain([av], ox, oy, depth, protect);
-      }
       const extra=chain.length-victims.length;
       if(extra>0){
         const pts=extra*10*depth;
@@ -2413,9 +2419,17 @@ class Game{
         }
       return out;
     }
+    /* line bomb — when chained with k same-orientation bombs it sweeps 2k-1 lines */
+    const horiz=t.special==='lineH';
+    const m=t._lineMult||1, half=(m-1)/2;
     const out=[];
-    if(t.special==='lineH') for(let c=0;c<COLS;c++){ const v=g[t.r][c]; if(v && v!==t) out.push(v); }
-    else                    for(let r=0;r<ROWS;r++){ const v=g[r][t.c]; if(v && v!==t) out.push(v); }
+    if(horiz){
+      for(let rr=Math.max(0,t.r-half); rr<=Math.min(ROWS-1,t.r+half); rr++)
+        for(let c=0;c<COLS;c++){ const v=g[rr][c]; if(v && v!==t) out.push(v); }
+    }else{
+      for(let cc=Math.max(0,t.c-half); cc<=Math.min(COLS-1,t.c+half); cc++)
+        for(let r=0;r<ROWS;r++){ const v=g[r][cc]; if(v && v!==t) out.push(v); }
+    }
     return out;
   }
   /* one special firing: beam / rings / flash / burst + sound */
@@ -2442,32 +2456,51 @@ class Game{
       return;
     }else{
       Anim.beam(s);
-      ring(x,y,s.color,{to:4.2,dur:.45});
+      ring(x,y,s.color,{to:4.2+(s._lineMult||1)*.6,dur:.45});
       particles.burst(x,y,'#ffffff',18,1.8);
       particles.burst(x,y,s.color,12,1.4);
+      if((s._lineMult||1)>1)
+        UI.floatText(x,y-CFG.cell*.9,'¡'+s._lineMult+' LÍNEAS!',{color:s.color,size:16,dur:.9});
     }
     AudioFX.bomb();
   }
-  /* chain reaction: every special hit by the blast also fires (BFS, loop-safe) */
+  /* chain reaction: every special hit by the blast also fires (BFS, loop-safe).
+     Chained line bombs widen: k same-orientation bombs → each sweeps 2k-1 lines. */
   async detonateChain(seeds, cx, cy, combo, protect, blastAt){
     const g=this.board.grid;
     protect = protect || new Set();
-    const fired=new Set();
-    const cleared=new Set();
-    const order=[];
-    seeds.forEach(s=>{
-      if(!s || cleared.has(s)) return;
-      cleared.add(s);
-      if(s.special && !fired.has(s)){ fired.add(s); order.push(s); }
-    });
-    for(let i=0;i<order.length;i++){
-      const s=order[i];
-      for(const v of this.specialTargets(s)){
-        if(protect.has(v) || cleared.has(v)) continue;
-        cleared.add(v);
-        if(v.special && !fired.has(v)){ fired.add(v); order.push(v); }
+    const base=seeds.filter(Boolean);
+    /* discover which specials fire; beams widen as more line bombs join, so
+       re-scan until the fired set stops growing (bounded, loop-safe) */
+    let order=[];
+    for(let iter=0; iter<6; iter++){
+      const fired=new Set(), seen=new Set(base), queue=[...base], ord=[];
+      while(queue.length){
+        const s=queue.shift();
+        if(s.special && !fired.has(s)){ fired.add(s); ord.push(s); }
+        for(const v of this.specialTargets(s)){
+          if(protect.has(v)||seen.has(v)) continue;
+          seen.add(v); queue.push(v);
+        }
       }
+      const cnt={lineH:0,lineV:0};
+      ord.forEach(s=>{ if(s.special==='lineH')cnt.lineH++; else if(s.special==='lineV')cnt.lineV++; });
+      ord.forEach(s=>{
+        if(s.special==='lineH') s._lineMult=2*cnt.lineH-1;
+        else if(s.special==='lineV') s._lineMult=2*cnt.lineV-1;
+      });
+      const grew=ord.length!==order.length;
+      order=ord;
+      if(!grew) break;
     }
+    /* collect everything cleared using the widened line targets */
+    const cleared=new Set(base);
+    order.forEach(s=>cleared.add(s));
+    order.forEach(s=>{
+      for(const v of this.specialTargets(s)){
+        if(!protect.has(v)) cleared.add(v);
+      }
+    });
     for(let i=0;i<order.length;i++){
       if(i>0) await wait(130);
       this.fireSpecialFX(order[i]);

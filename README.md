@@ -3,6 +3,17 @@
 Juego Match-3 estilo Candy Crush en **un solo `index.html`** (GSAP por CDN, sin build).
 Incluye Top 5 con nombre de hasta 10 caracteres, modo LOCAL / JSON en la nube / base de datos global.
 
+### Mecánicas especiales
+- **Agujeros negros** (desde 10K): al juntar 3, el sobreviviente **absorbe las partículas de
+  todos** los fusionados (+1 por la unión). Con **3 partículas** se vuelve un **AGUJERO MASIVO**:
+  doble toque y forma una **SINGULARIDAD** que absorbe todo a su alrededor.
+- **Lunas** (desde 20K): también acumulan partículas al fusionarse; con **4** colapsan en un
+  agujero negro.
+- **Bombas lineales encadenadas**: si una bomba lineal activa a otra en cadena, el haz se
+  expande **+2 líneas por bomba extra** de la misma orientación (1 → 3 → 5 → 7…).
+- **Meteoritos** (desde 30K): caen del cielo en tormentas, solo combinan de a 5+ y su explosión
+  arrasa todo alrededor.
+
 ---
 
 ## ⚙️ Rendimiento y calidad gráfica (cualquier dispositivo)

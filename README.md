@@ -5,6 +5,43 @@ Incluye Top 5 con nombre de hasta 10 caracteres, modo LOCAL / JSON en la nube / 
 
 ---
 
+## ⚙️ Rendimiento y calidad gráfica (cualquier dispositivo)
+
+El juego detecta el dispositivo la primera vez y elige un preset por sí solo, pero todo se
+puede ajustar desde el **⚙️ (tuerca)** arriba a la derecha:
+
+| Preset | Para qué dispositivos |
+|---|---|
+| **ALTA** | Gama alta (Pixel 9 Pro, PC, iPhone recientes) |
+| **MEDIA** | Gama media y iPhone en Safari (quita brillos animados) |
+| **MÍNIMA** | Gama baja / teléfonos viejos (sin partículas ni fondo) |
+
+Además hay un botón **⚡ PROBAR MI DISPOSITIVO** que mide los FPS reales de tu GPU durante
+medio segundo y aplica el preset ideal automáticamente.
+
+Ajustes individuales: partículas de bloques, partículas de fondo, respiración de gemas,
+animación de formas, vibración, destellos, **brillos/neón** (el que más FPS recupera en
+iPhone) y **densidad de partículas** (baja/media/alta). Todo se guarda por dispositivo.
+
+> **Nota iPhone/Safari:** lo que más ralentiza no son las partículas sino los *filtros
+> animados* (`drop-shadow`, `backdrop-blur`, `hue-rotate`). Por eso el preset MEDIA y el
+> toggle "Brillos y neón" los desactivan por completo.
+
+---
+
+## 🏷️ Versionado semántico automático
+
+La versión vive en `index.html` como `const APP_VERSION = 'vX.Y.Z'` y se muestra bajo el
+logo y en los ajustes.
+
+- Cada **Pull Request** dispara `.github/workflows/auto-version.yml`, que incrementa el
+  **patch** (`v1.1.0 → v1.1.1`) y hace commit en la rama del PR con el **título del PR
+  como motivo**.
+- Para saltos de **minor** o **major**, edita `APP_VERSION` a mano dentro del PR.
+- Solo funciona en PRs desde ramas del mismo repo (los forks no permiten escribir de vuelta).
+
+---
+
 ## ⚠️ ¿Por qué el ranking no puede ser un `.txt`/`.json` dentro del repo de GitHub?
 
 GitHub Pages (y Netlify/Vercel) sirven sitios **estáticos**: el navegador que abre tu link

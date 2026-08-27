@@ -717,7 +717,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.2.3';  // bloqueo total del zoom en iOS (toques rápidos y pellizco)
+const APP_VERSION = 'v1.3.1';  // poderes solo se activan al tocarlos o al ser destruidos + bombas lineales apiladas (1→3→5 líneas)
 const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -1537,34 +1537,37 @@ const Anim = {
     gsap.to(t.inner,{scale:1.32,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
     await wait(340);
   },
+  /* line-bomb beam — with chained bombs it draws ONE BEAM PER SWEPT LINE,
+     rippling outward from the center row/col for a professional stacked look */
   beam(t){
     const horiz = t.special==='lineH';
     const sizeH = CFG.cell*COLS, sizeV = CFG.cell*ROWS, col = t.color;
-    const mk=(thick,core)=>{
+    const m=t._lineMult||1, half=(m-1)/2;
+    const mkLine=(idx,thick,core)=>{
       const el=document.createElement('div');
       el.className='beam';
+      const delay=Math.abs(idx)*.055;                 /* center first, edges ripple out */
       if(horiz){
         el.style.width=sizeH+'px'; el.style.height=thick+'px';
         el.style.background= core
           ? 'linear-gradient(90deg,transparent,rgba(255,255,255,.95) 18%,#fff 50%,rgba(255,255,255,.95) 82%,transparent)'
           : 'linear-gradient(90deg,transparent,'+col+' 16%,#fff 50%,'+col+' 84%,transparent)';
-        gsap.set(el,{x:0, y:(t.r+.5)*CFG.cell-thick/2, transformOrigin:((t.c+.5)/COLS*100)+'% 50%'});
-        gsap.fromTo(el,{scaleX:0},{scaleX:1,duration:.22,ease:'power3.out'});
+        gsap.set(el,{x:0, y:(t.r+idx+.5)*CFG.cell-thick/2, transformOrigin:((t.c+.5)/COLS*100)+'% 50%'});
+        gsap.fromTo(el,{scaleX:0},{scaleX:1,duration:.22,delay,ease:'power3.out'});
       }else{
         el.style.width=thick+'px'; el.style.height=sizeV+'px';
         el.style.background= core
           ? 'linear-gradient(180deg,transparent,rgba(255,255,255,.95) 18%,#fff 50%,rgba(255,255,255,.95) 82%,transparent)'
           : 'linear-gradient(180deg,transparent,'+col+' 16%,#fff 50%,'+col+' 84%,transparent)';
-        gsap.set(el,{y:0, x:(t.c+.5)*CFG.cell-thick/2, transformOrigin:'50% '+((t.r+.5)/ROWS*100)+'%'});
-        gsap.fromTo(el,{scaleY:0},{scaleY:1,duration:.22,ease:'power3.out'});
+        gsap.set(el,{y:0, x:(t.c+idx+.5)*CFG.cell-thick/2, transformOrigin:'50% '+((t.r+.5)/ROWS*100)+'%'});
+        gsap.fromTo(el,{scaleY:0},{scaleY:1,duration:.22,delay,ease:'power3.out'});
       }
-      el.style.boxShadow= core ? '0 0 30px #ffffff' : '0 0 26px '+col;
+      el.style.boxShadow= core ? '0 0 26px #ffffff' : '0 0 22px '+col;
       fxEl.appendChild(el);
-      gsap.to(el,{opacity:0,duration:.32,delay:.24,onComplete:()=>el.remove()});
+      gsap.to(el,{opacity:0,duration:.3,delay:delay+.24,onComplete:()=>el.remove()});
     };
-    const m=t._lineMult||1;
-    mk(m===1?CFG.cell*.56:m*CFG.cell*.85, false);
-    mk(m===1?CFG.cell*.2 :m*CFG.cell*.3, true);
+    for(let k=-half;k<=half;k++) mkLine(k, k===0?CFG.cell*.5:CFG.cell*.42, false);
+    mkLine(0, CFG.cell*.18, true);                    /* white hot core on the origin line */
     const [ox,oy]=center(t);
     ring(ox,oy,col,{from:.6,to:3+m*.6,dur:.4});
   },
@@ -2002,7 +2005,9 @@ class InputCtl{
   tap(t){
     /* one tap on a power gem detonates it right away (iOS-friendly, no double-tap zoom);
        power gems are still swappable by dragging them onto a neighbour */
-    if(t.special){ this.last=null; this.deselect(); this.game.activateSpecial(t); return; }
+    if(t.special && t.el.isConnected && this.game.board.grid[t.r][t.c]===t){
+      this.last=null; this.deselect(); this.game.activateSpecial(t); return;
+    }
     const now=performance.now();
     this.last={t,time:now};
     if(this.selected===t){ this.deselect(); return; }
@@ -2413,6 +2418,7 @@ class Game{
   /* tiles a special clears when it fires (excludes itself) */
   specialTargets(t){
     const g=this.board.grid;
+    if(!t.special) return [];   /* normal gems never trigger blasts — only specials do */
     if(t.special==='bomb'){
       const counts=Array(9).fill(0);
       this.board.all().forEach(x=>{ if(x.type>=0) counts[x.type]++; });
@@ -2513,7 +2519,9 @@ class Game{
     });
     for(let i=0;i<order.length;i++){
       if(i>0) await wait(130);
-      this.fireSpecialFX(order[i]);
+      const s=order[i];
+      if(g[s.r][s.c]!==s) continue;            /* stale guard: tile already replaced */
+      this.fireSpecialFX(s);
       this.shake(10+Math.min(i,4)*2);
     }
     const victims=[...cleared];
@@ -2526,12 +2534,14 @@ class Game{
     }else{
       await Anim.destroy(victims,{cx,cy,wave:true,combo});
     }
-    victims.forEach(v=>{ g[v.r][v.c]=null; });
+    victims.forEach(v=>{ if(g[v.r][v.c]===v) g[v.r][v.c]=null; });
+    order.forEach(s=>{ delete s._lineMult; });  /* widening never leaks into a later chain */
     return victims;
   }
 
   async activateSpecial(t){
     if(this.state!==State.PLAYING || !t.special) return;
+    if(this.board.grid[t.r][t.c]!==t) return;  /* stale tile: already gone or replaced */
     this.setState(State.RESOLVING);
     const [ox,oy]=center(t);
     await Anim.charge(t);

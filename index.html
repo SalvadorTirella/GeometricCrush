@@ -304,6 +304,8 @@ button{ font:inherit; }
 .t5-row.me .t5-name{ color:var(--lime); text-shadow:0 0 10px rgba(163,255,18,.6); }
 .t5-empty,.t5-loading{ text-align:center; color:var(--dim); letter-spacing:.3em; font-size:11px;
   font-weight:700; padding:12px; list-style:none; }
+.top5-note{ margin-top:9px; font-size:9.5px; letter-spacing:.12em; color:var(--dim);
+  font-weight:600; line-height:1.55; text-align:center; }
 .enter-wrap{ margin:18px auto 0; max-width:390px; }
 .enter-lbl{ font-family:'Orbitron',sans-serif; font-size:11px; font-weight:800; letter-spacing:.2em;
   color:var(--lime); text-shadow:0 0 12px rgba(163,255,18,.6); animation:enterGlow 1.6s ease-in-out infinite; }
@@ -434,6 +436,7 @@ button{ font:inherit; }
       <div class="top5-wrap">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
         <ol class="top5" id="top5-start"><li class="t5-loading">LOADING…</li></ol>
+        <div class="top5-note" id="top5-note1"></div>
       </div>
       <button class="btn" id="play-btn">PLAY</button>
     </div>
@@ -460,6 +463,7 @@ button{ font:inherit; }
       <div class="top5-wrap over">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode2">LOCAL</span></div>
         <ol class="top5" id="top5-over"><li class="t5-loading">LOADING…</li></ol>
+        <div class="top5-note" id="top5-note2"></div>
       </div>
       <button class="btn mag" id="again-btn">PLAY AGAIN</button>
     </div>
@@ -508,20 +512,31 @@ const Cookie = {
 };
 
 /* ══ GLOBAL TOP-5 LEADERBOARD ══════════════════════════════════
-   Paste your FREE Supabase project URL + anon key below and the
-   Top 5 becomes shared worldwide (setup: README.md). Leave them
-   empty → ranking is stored per-device in localStorage.         */
+   Three backends, picked by priority (full setup guide: README.md):
+
+   1) JSONBLOB_URL → a JSON "file" hosted in the cloud (jsonblob.com,
+      zero signup). Paste the blob URL and the Top 5 is shared.
+   2) SUPA_URL + SUPA_KEY → free Supabase Postgres DB (recommended,
+      safer against simultaneous writes).
+   3) both empty → LOCAL ranking, stored per-device in localStorage.  */
+const JSONBLOB_URL = '';
 const SUPA_URL = '';
 const SUPA_KEY = '';
 
 const LB = {
-  mode:(SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
+  mode:(JSONBLOB_URL) ? 'JSON' : (SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
   _hd(){ return { apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }; },
   async load(){
     if(this.mode==='GLOBAL'){
       try{
         const r=await fetch(SUPA_URL+'/rest/v1/neon_scores?select=name,score&order=score.desc,id.asc&limit=5',{headers:this._hd()});
         if(r.ok) return await r.json();
+      }catch(e){ /* offline → fall through to local */ }
+    }
+    if(this.mode==='JSON'){
+      try{
+        const r=await fetch(JSONBLOB_URL,{headers:{Accept:'application/json'}});
+        if(r.ok){ const j=await r.json(); if(Array.isArray(j)) return j.slice(0,5); }
       }catch(e){ /* offline → fall through to local */ }
     }
     return this.loadLocal();
@@ -537,6 +552,19 @@ const LB = {
         });
         if(r.ok) return {ok:true};
       }catch(e){ /* offline → also keep a local copy */ }
+    }
+    if(this.mode==='JSON'){
+      try{
+        const l=await this.load();
+        l.push({name,score});
+        l.sort((a,b)=>b.score-a.score);
+        await fetch(JSONBLOB_URL,{
+          method:'PUT',
+          headers:{'Content-Type':'application/json', Accept:'application/json'},
+          body:JSON.stringify(l.slice(0,5))
+        });
+        return {ok:true};
+      }catch(e){ /* offline → keep a local copy */ }
     }
     const l=this.loadLocal();
     l.push({name,score});
@@ -842,7 +870,16 @@ const UI = {
     gsap.fromTo(this.scoreEl,{scale:1.34},{scale:1,duration:.35,ease:'back.out(3)',overwrite:true});
   },
   hideOverlay(){ gsap.to(this.overlay,{autoAlpha:0,duration:.35,ease:'power2.inOut'}); },
-  setModeTag(el){ el.textContent=LB.mode; el.classList.toggle('local', LB.mode==='LOCAL'); },
+  setModeTag(el, noteEl){
+    el.textContent=LB.mode;
+    el.classList.toggle('local', LB.mode==='LOCAL');
+    const NOTES={
+      LOCAL:'LOCAL \u00b7 cada dispositivo guarda su propio top 5 \u2014 activ\u00e1 el ranking mundial pegando el JSON/DB gratis en index.html (README.md)',
+      JSON:'JSON \u00b7 ranking guardado en un archivo JSON en la nube \u2014 visible para todos los que jueguen con el link',
+      GLOBAL:'GLOBAL \u00b7 base de datos compartida \u2014 todos los jugadores ven el mismo top 5'
+    };
+    if(noteEl) noteEl.textContent=NOTES[LB.mode];
+  },
   renderTop5(el,list,me){
     el.textContent='';
     if(!list.length){
@@ -863,7 +900,7 @@ const UI = {
   },
   showStart(){
     this.overPanel.classList.add('off'); this.startPanel.classList.remove('off');
-    this.setModeTag($('#top5-mode'));
+    this.setModeTag($('#top5-mode'), $('#top5-note1'));
     $('#top5-start').innerHTML='<li class="t5-loading">LOADING\u2026</li>';
     LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
     gsap.to(this.overlay,{autoAlpha:1,duration:.3});
@@ -874,7 +911,7 @@ const UI = {
     this.rankEl.textContent = rankFor(final);
     this.nbEl.classList.toggle('off', !isNew);
     this.bestFinalEl.textContent = best;
-    this.setModeTag($('#top5-mode2'));
+    this.setModeTag($('#top5-mode2'), $('#top5-note2'));
     const q=LB.qualifies(list,final);
     $('#enter-wrap').classList.toggle('off', !q);
     this.renderTop5($('#top5-over'), list, null);

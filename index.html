@@ -484,7 +484,7 @@ button{ font:inherit; }
 
 /* ─────────────────────────── GLOBAL ─────────────────────────── */
 const $ = s => document.querySelector(s);
-const N = 8;
+const ROWS = 12, COLS = 8;
 const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -945,7 +945,7 @@ const UI = {
     gsap.killTweensOf(el);
     gsap.fromTo(el,{scale:.3,opacity:0,rotation:-4},{scale:1,opacity:1,rotation:0,duration:.3,ease:'back.out(2.6)'});
     gsap.to(el,{opacity:0,scale:1.28,duration:.4,delay:.7,ease:'power1.in'});
-    const cx=N*CFG.cell/2, cy=N*CFG.cell/2;
+    const cx=COLS*CFG.cell/2, cy=ROWS*CFG.cell/2;
     ring(cx,cy,col,{from:.4,to:5.2,dur:.6});
     ring(cx,cy,'#ffffff',{from:.3,to:3.6,dur:.5,delay:.06});
     particles.burst(cx,cy,col,12,1.3);
@@ -993,10 +993,10 @@ const UI = {
   },
   /* feedback when the offline queue finally reaches the global ranking */
   syncToast(n){
-    const W=N*CFG.cell/2;
-    this.floatText(W, W*.26, 'SYNCED '+n+' SCORE'+(n>1?'S':'')+' \u2192 GLOBAL',
+    const W=COLS*CFG.cell/2, H=ROWS*CFG.cell;
+    this.floatText(W, H*.2, 'SYNCED '+n+' SCORE'+(n>1?'S':'')+' \u2192 GLOBAL',
       {color:'#a3ff12', size:16, dur:1.5});
-    ring(W,W*.26,'#a3ff12',{from:.4,to:3.2,dur:.55});
+    ring(W,H*.2,'#a3ff12',{from:.4,to:3.2,dur:.55});
     AudioFX.bonus();
     this.refreshRanking();
   },
@@ -1067,15 +1067,15 @@ const UI = {
     this._lastMe={name, score:this._pending};
     const list=await LB.load();
     this.renderTop5($('#top5-over'), list, this._lastMe);
-    const W=N*CFG.cell/2;
-    particles.burst(W,W*.3,'#a3ff12',16,1.4);
-    ring(W,W*.3,'#a3ff12',{from:.4,to:3,dur:.5});
+    const W=COLS*CFG.cell/2, H=ROWS*CFG.cell;
+    particles.burst(W,H*.3,'#a3ff12',16,1.4);
+    ring(W,H*.3,'#a3ff12',{from:.4,to:3,dur:.5});
     if(res.fatal){
-      this.floatText(W,W*.62,'BLOB 404 \u00b7 GUARDADO LOCAL \u2014 VER README.md',
+      this.floatText(W,H*.62,'BLOB 404 \u00b7 GUARDADO LOCAL \u2014 VER README.md',
         {color:'#ff4d5e',size:12,dur:2.2});
       AudioFX.warn();
     }else if(res.queued){
-      this.floatText(W,W*.62,'OFFLINE \u00b7 SE SINCRONIZAR\u00c1 AL VOLVER INTERNET',
+      this.floatText(W,H*.62,'OFFLINE \u00b7 SE SINCRONIZAR\u00c1 AL VOLVER INTERNET',
         {color:'#ffb300',size:12,dur:1.8});
       AudioFX.warn();
     }
@@ -1165,23 +1165,23 @@ const Anim = {
   },
   beam(t){
     const horiz = t.special==='lineH';
-    const size = CFG.cell*N, col = t.color;
+    const sizeH = CFG.cell*COLS, sizeV = CFG.cell*ROWS, col = t.color;
     const mk=(thick,core)=>{
       const el=document.createElement('div');
       el.className='beam';
       if(horiz){
-        el.style.width=size+'px'; el.style.height=thick+'px';
+        el.style.width=sizeH+'px'; el.style.height=thick+'px';
         el.style.background= core
           ? 'linear-gradient(90deg,transparent,rgba(255,255,255,.95) 18%,#fff 50%,rgba(255,255,255,.95) 82%,transparent)'
           : 'linear-gradient(90deg,transparent,'+col+' 16%,#fff 50%,'+col+' 84%,transparent)';
-        gsap.set(el,{x:0, y:(t.r+.5)*CFG.cell-thick/2, transformOrigin:((t.c+.5)/N*100)+'% 50%'});
+        gsap.set(el,{x:0, y:(t.r+.5)*CFG.cell-thick/2, transformOrigin:((t.c+.5)/COLS*100)+'% 50%'});
         gsap.fromTo(el,{scaleX:0},{scaleX:1,duration:.22,ease:'power3.out'});
       }else{
-        el.style.width=thick+'px'; el.style.height=size+'px';
+        el.style.width=thick+'px'; el.style.height=sizeV+'px';
         el.style.background= core
           ? 'linear-gradient(180deg,transparent,rgba(255,255,255,.95) 18%,#fff 50%,rgba(255,255,255,.95) 82%,transparent)'
           : 'linear-gradient(180deg,transparent,'+col+' 16%,#fff 50%,'+col+' 84%,transparent)';
-        gsap.set(el,{y:0, x:(t.c+.5)*CFG.cell-thick/2, transformOrigin:'50% '+((t.r+.5)/N*100)+'%'});
+        gsap.set(el,{y:0, x:(t.c+.5)*CFG.cell-thick/2, transformOrigin:'50% '+((t.r+.5)/ROWS*100)+'%'});
         gsap.fromTo(el,{scaleY:0},{scaleY:1,duration:.22,ease:'power3.out'});
       }
       el.style.boxShadow= core ? '0 0 30px #ffffff' : '0 0 26px '+col;
@@ -1231,12 +1231,12 @@ class Board{
   constructor(el){ this.el=el; this.grid=[]; }
   clear(){
     this.el.querySelectorAll('.tile').forEach(n=>n.remove());
-    this.grid = Array.from({length:N},()=>Array(N).fill(null));
+    this.grid = Array.from({length:ROWS},()=>Array(COLS).fill(null));
   }
   all(){ const out=[]; this.grid.forEach(row=>row.forEach(t=>{ if(t) out.push(t); })); return out; }
   fill(){
     const g=this.grid;
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
       let t;
       do{ t=rand6(); }while(
         (c>=2 && g[r][c-1] && g[r][c-2] && g[r][c-1].type===t && g[r][c-2].type===t) ||
@@ -1260,24 +1260,24 @@ class Board{
 const Match = {
   find(g){
     const runs=[];
-    for(let r=0;r<N;r++){
+    for(let r=0;r<ROWS;r++){
       let c=0;
-      while(c<N){
+      while(c<COLS){
         const t=g[r][c];
         if(!t || t.type<0){ c++; continue; }
         let l=1;
-        while(c+l<N && g[r][c+l] && g[r][c+l].type===t.type) l++;
+        while(c+l<COLS && g[r][c+l] && g[r][c+l].type===t.type) l++;
         if(l>=3) runs.push({cells:Array.from({length:l},(_,i)=>[r,c+i]), dir:'H', len:l});
         c+=l;
       }
     }
-    for(let c=0;c<N;c++){
+    for(let c=0;c<COLS;c++){
       let r=0;
-      while(r<N){
+      while(r<ROWS){
         const t=g[r][c];
         if(!t || t.type<0){ r++; continue; }
         let l=1;
-        while(r+l<N && g[r+l][c] && g[r+l][c].type===t.type) l++;
+        while(r+l<ROWS && g[r+l][c] && g[r+l][c].type===t.type) l++;
         if(l>=3) runs.push({cells:Array.from({length:l},(_,i)=>[r+i,c]), dir:'V', len:l});
         r+=l;
       }
@@ -1289,20 +1289,20 @@ const Match = {
     const T=t.type; let n;
     n=1;
     for(let i=c-1;i>=0 && g[r][i] && g[r][i].type===T;i--) n++;
-    for(let i=c+1;i<N  && g[r][i] && g[r][i].type===T;i++) n++;
+    for(let i=c+1;i<COLS && g[r][i] && g[r][i].type===T;i++) n++;
     if(n>=3) return true;
     n=1;
     for(let i=r-1;i>=0 && g[i][c] && g[i][c].type===T;i--) n++;
-    for(let i=r+1;i<N  && g[i][c] && g[i][c].type===T;i++) n++;
+    for(let i=r+1;i<ROWS && g[i][c] && g[i][c].type===T;i++) n++;
     return n>=3;
   },
   findMove(g){
     const dirs=[[0,1],[1,0]];
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
       const t=g[r][c]; if(!t || t.type<0) continue;
       for(const [dr,dc] of dirs){
         const r2=r+dr, c2=c+dc;
-        if(r2>=N || c2>=N) continue;
+        if(r2>=ROWS || c2>=COLS) continue;
         const n=g[r2][c2]; if(!n || n.type<0) continue;
         // virtual swap of the two types, test, then restore
         const tmp=t.type; t.type=n.type; n.type=tmp;
@@ -1327,7 +1327,7 @@ const Special = {
     // merge runs that share at least one cell
     const clusters=[];
     for(const run of sorted){
-      const keys=run.cells.map(([r,c])=>r*N+c);
+      const keys=run.cells.map(([r,c])=>r*COLS+c);
       const hits=clusters.filter(cl=>keys.some(k=>cl.cellSet.has(k)));
       if(!hits.length){
         clusters.push({runs:[run], cellSet:new Set(keys)});
@@ -1357,11 +1357,11 @@ const Special = {
       if(kind==='bomb'){
         const counts=new Map();
         cl.runs.forEach(run=>run.cells.forEach(([r,c])=>{
-          const k=r*N+c; counts.set(k,(counts.get(k)||0)+1);
+          const k=r*COLS+c; counts.set(k,(counts.get(k)||0)+1);
         }));
         let inter=null, best=1;
         counts.forEach((n,k)=>{ if(n>best){ best=n; inter=k; } });
-        if(inter!=null) pivot=[(inter/N)|0, inter%N];
+        if(inter!=null) pivot=[(inter/COLS)|0, inter%COLS];
       }
       if(!pivot && hint){
         pivot = cl.runs.flatMap(r=>r.cells).find(([r,c]) =>
@@ -1371,7 +1371,7 @@ const Special = {
         const long=cl.runs.reduce((a,b)=>b.len>a.len?b:a);
         pivot=long.cells[(long.len/2)|0];
       }
-      const key=pivot[0]*N+pivot[1];
+      const key=pivot[0]*COLS+pivot[1];
       if(taken.has(key)) continue;
       taken.add(key);
       plans.push({ r:pivot[0], c:pivot[1], kind });
@@ -1424,9 +1424,9 @@ const Special = {
 const Gravity = {
   apply(board){
     const g=board.grid, anims=[];
-    for(let c=0;c<N;c++){
-      let write=N-1;
-      for(let r=N-1;r>=0;r--){
+    for(let c=0;c<COLS;c++){
+      let write=ROWS-1;
+      for(let r=ROWS-1;r>=0;r--){
         const t=g[r][c]; if(!t) continue;
         if(write!==r){
           g[write][c]=t; g[r][c]=null; t.r=write;
@@ -1493,7 +1493,7 @@ class InputCtl{
     const horiz=Math.abs(dx)>Math.abs(dy);
     const dr=horiz?0:(dy>0?1:-1), dc=horiz?(dx>0?1:-1):0;
     const r=p.t.r+dr, c=p.t.c+dc;
-    if(r<0||r>=N||c<0||c>=N) return;
+    if(r<0||r>=ROWS||c<0||c>=COLS) return;
     const nb=this.game.board.grid[r][c];
     if(nb) this.game.trySwap(p.t, nb);
   }
@@ -1609,13 +1609,12 @@ class Game{
     const SHELL=24; /* shell border + inner padding, per side */
     const EDGE=10;  /* guaranteed minimum gap to the screen edge, per side */
     const w=st.clientWidth -SHELL-EDGE*2, h=st.clientHeight-SHELL-EDGE*2;
-    CFG.cell=Math.max(28, Math.floor(Math.min(w,h)/N));
-    const size=CFG.cell*N;
-    boardEl.style.width=size+'px'; boardEl.style.height=size+'px';
-    fxEl.style.width=size+'px'; fxEl.style.height=size+'px';
+    CFG.cell=Math.max(20, Math.floor(Math.min(w/COLS, h/ROWS)));
+    boardEl.style.width=CFG.cell*COLS+'px'; boardEl.style.height=CFG.cell*ROWS+'px';
+    fxEl.style.width=CFG.cell*COLS+'px'; fxEl.style.height=CFG.cell*ROWS+'px';
     fxEl.style.left=boardEl.offsetLeft+'px'; fxEl.style.top=boardEl.offsetTop+'px';
     boardEl.querySelectorAll('.cell').forEach(n=>n.remove());
-    for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
       const d=document.createElement('div');
       d.className='cell'+(((r+c)&1)?' alt':'');
       d.style.width=CFG.cell+'px'; d.style.height=CFG.cell+'px';
@@ -1637,19 +1636,19 @@ class Game{
     this.board.generate();
     AudioFX.deal();
     await this.dealIn();
-    const W=N*CFG.cell/2;
-    ring(W,W,'#00e5ff',{from:.5,to:6.2,dur:.7});
-    particles.burst(W,W,'#00e5ff',14,1.3);
-    UI.floatText(W,W-CFG.cell*.4,'GO!',{color:'#00e5ff',size:30,dur:.9});
+    const W=COLS*CFG.cell/2, H=ROWS*CFG.cell/2;
+    ring(W,H,'#00e5ff',{from:.5,to:6.2,dur:.7});
+    particles.burst(W,H,'#00e5ff',14,1.3);
+    UI.floatText(W,H-CFG.cell*.4,'GO!',{color:'#00e5ff',size:30,dur:.9});
     this.setState(State.PLAYING);
   }
 
   async dealIn(){
     const ts=this.board.all();
-    ts.forEach(t=>gsap.set(t.el,{y:(t.r-9.5)*CFG.cell}));
+    ts.forEach(t=>gsap.set(t.el,{y:(t.r-(ROWS+1.5))*CFG.cell}));
     await Promise.all(ts.map(t=>
       gsap.to(t.el,{y:t.r*CFG.cell, duration:.6,
-        delay:t.c*.045+(N-1-t.r)*.02, ease:'bounce.out'}).then()));
+        delay:t.c*.045+(ROWS-1-t.r)*.02, ease:'bounce.out'}).then()));
   }
 
   /* CRUSH button: chaos-scramble the whole board (charges 60s of play time) */
@@ -1659,11 +1658,11 @@ class Game{
     this.setState(State.RESOLVING);
     this.input.deselect();
     AudioFX.bomb(); this.shake(13); flashBoard();
-    const W=N*CFG.cell;
-    UI.floatText(W/2,W/2,'CRUSH!',{color:'#ff2fd2',size:34,dur:1.1});
+    const W=COLS*CFG.cell, H=ROWS*CFG.cell;
+    UI.floatText(W/2,H/2,'CRUSH!',{color:'#ff2fd2',size:34,dur:1.1});
     const out=this.board.all();
     await Promise.all(out.map(t=>{
-      const [x,y]=center(t), a=Math.random()*Math.PI*2, d=W*.42+Math.random()*W*.35;
+      const [x,y]=center(t), a=Math.random()*Math.PI*2, d=Math.max(W,H)*.42+Math.random()*W*.35;
       if(Math.random()<.4) particles.burst(x,y,t.color,4,.7);
       return gsap.to(t.el,{x:'+='+Math.cos(a)*d, y:'+='+Math.sin(a)*d,
         rotation:Math.random()*560-280, scale:.05, opacity:0,
@@ -1675,10 +1674,10 @@ class Game{
       gsap.to(t.el,{scale:1, rotation:0, opacity:1, duration:.42,
         delay:Math.random()*.45, ease:'back.out(1.7)'});
     });
-    ring(W/2,W/2,'#ff2fd2',{from:.4,to:6.4,dur:.65});
-    ring(W/2,W/2,'#ffffff',{from:.3,to:4,dur:.5,delay:.08});
-    particles.burst(W/2,W/2,'#ff2fd2',22,1.7);
-    particles.burst(W/2,W/2,'#ffffff',12,1.2);
+    ring(W/2,H/2,'#ff2fd2',{from:.4,to:6.4,dur:.65});
+    ring(W/2,H/2,'#ffffff',{from:.3,to:4,dur:.5,delay:.08});
+    particles.burst(W/2,H/2,'#ff2fd2',22,1.7);
+    particles.burst(W/2,H/2,'#ffffff',12,1.2);
     await wait(720);
     this.setState(State.PLAYING);
   }
@@ -1717,10 +1716,10 @@ class Game{
       Combo.bump(depth);
       const plans=Special.plan(runs,hint); hint=null;
       const cellSet=new Set();
-      runs.forEach(run=>run.cells.forEach(([r,c])=>cellSet.add(r*N+c)));
-      const planSet=new Set(plans.map(p=>p.r*N+p.c));
+      runs.forEach(run=>run.cells.forEach(([r,c])=>cellSet.add(r*COLS+c)));
+      const planSet=new Set(plans.map(p=>p.r*COLS+p.c));
       let cx=0, cy=0;
-      cellSet.forEach(k=>{ cx+=(k%N+.5)*CFG.cell; cy+=(((k/N)|0)+.5)*CFG.cell; });
+      cellSet.forEach(k=>{ cx+=(k%COLS+.5)*CFG.cell; cy+=(((k/COLS)|0)+.5)*CFG.cell; });
       cx/=cellSet.size; cy/=cellSet.size;
 
       const pts=cellSet.size*10*depth + plans.length*50*depth;
@@ -1741,7 +1740,7 @@ class Game{
 
       const victims=[];
       cellSet.forEach(k=>{
-        const r=(k/N)|0, c=k%N;
+        const r=(k/COLS)|0, c=k%COLS;
         if(!planSet.has(k) && g[r][c]) victims.push(g[r][c]);
       });
       // forge fresh specials first so a chained blast can't silently eat the reward
@@ -1777,8 +1776,8 @@ class Game{
       return this.board.all().filter(x=>x.type===col && x!==t);
     }
     const out=[];
-    if(t.special==='lineH') for(let c=0;c<N;c++){ const v=g[t.r][c]; if(v && v!==t) out.push(v); }
-    else                    for(let r=0;r<N;r++){ const v=g[r][t.c]; if(v && v!==t) out.push(v); }
+    if(t.special==='lineH') for(let c=0;c<COLS;c++){ const v=g[t.r][c]; if(v && v!==t) out.push(v); }
+    else                    for(let r=0;r<ROWS;r++){ const v=g[r][t.c]; if(v && v!==t) out.push(v); }
     return out;
   }
   /* one special firing: beam / rings / flash / burst + sound */
@@ -1854,7 +1853,7 @@ class Game{
   }
 
   async shuffle(){
-    UI.floatText(N*CFG.cell/2, N*CFG.cell/2, 'NO MOVES — RESHUFFLE',
+    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell/2, 'NO MOVES — RESHUFFLE',
       {color:'#00e5ff',size:20,dur:1.5,vy:-30});
     await wait(420);
     const out=this.board.all();
@@ -1877,16 +1876,16 @@ class Game{
     const best=Math.max(prev,final);
     UI.renderBest(best);
     const list=await LB.load();
-    const W=N*CFG.cell;
+    const W=COLS*CFG.cell, H=ROWS*CFG.cell;
     for(let i=0;i<6;i++){
       gsap.delayedCall(.12+i*.15,()=>{
         const col=TYPES[(Math.random()*TYPES.length)|0].color;
-        const x=W*(.18+Math.random()*.64), y=W*(.14+Math.random()*.6);
+        const x=W*(.18+Math.random()*.64), y=H*(.14+Math.random()*.6);
         particles.burst(x,y,col,20,1.9);
         ring(x,y,col,{from:.4,to:3.6,dur:.55});
       });
     }
-    if(isNew) gsap.delayedCall(.4,()=>particles.confetti(W/2,W*.3,54,1.9));
+    if(isNew) gsap.delayedCall(.4,()=>particles.confetti(W/2,H*.3,54,1.9));
     gsap.delayedCall(isNew?1.05:.7,()=>UI.showGameOver(final,best,isNew,list));
   }
 

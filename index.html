@@ -388,7 +388,8 @@ button{ font:inherit; }
       <div class="chip best"><span class="lbl">BEST</span><span class="val" id="best">0</span></div>
     </div>
     <div class="hud-right">
-      <div class="chip moves" id="moves-chip"><span class="lbl">MOVES</span><span class="val" id="moves">25</span></div>
+      <div class="chip moves" id="moves-chip"><span class="lbl">MOVIMIENTOS</span><span class="val" id="moves">25</span></div>
+       </br>
       <button id="crush" disabled aria-label="Crush: scramble the board">CRUSH<span class="sub" id="crush-t">60s</span><i class="cool" id="crush-cool"></i></button>
       <button id="mute" aria-label="Toggle sound">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -427,45 +428,45 @@ button{ font:inherit; }
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
       </div>
       <ul class="how">
-        <li>Drag a gem — or tap two neighbours — to swap. Line up <b class="cy">3+</b> to crush.</li>
-        <li>Match <b class="mg">4</b> → LINE BOMB · <b class="mg">5+ gems</b> in one shape (straight 5, or combined L / T like 3H+3V) → COLOR BOMB.</li>
-        <li><b class="am">Double-click / double-tap</b> a power gem to detonate it.</li>
-        <li><b class="lm">25 moves</b>. Matches of 4+ grant <b class="lm">+2 bonus moves</b>; cascades multiply score.</li>
-        <li>Stall for <b class="cy">10s</b> and the grid bounces a combo for you — costing <b class="cr">−1 move</b>. Best score is kept in a browser cookie.</li>
+        <li>Arrastrá una gema — o tocá dos vecinas — para intercambiarlas. Alineá <b class="cy">3+</b> para destruir.</li>
+        <li>Hacé combinación de <b class="mg">4</b> → BOMBA DE LÍNEA · <b class="mg">5+ gemas</b> en una forma (5 en línea, o L / T combinadas como 3H+3V) → BOMBA DE COLOR.</li>
+        <li><b class="am">Hacé doble clic / doble toque</b> en una gema especial para detonarla.</li>
+        <li><b class="lm">25 movimientos</b>. Las combinaciones de 4+ otorgan <b class="lm">+2 movimientos de bonificación</b>; las reacciones en cadena multiplican el puntaje.</li>
+        <li>Esperá <b class="cy">10s</b> sin moverte y el tablero te sugerirá un combo — costando <b class="cr">−1 movimiento</b>. El mejor puntaje se guarda en una cookie del navegador.</li>
       </ul>
       <div class="top5-wrap">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
-        <ol class="top5" id="top5-start"><li class="t5-loading">LOADING…</li></ol>
+        <ol class="top5" id="top5-start"><li class="t5-loading">CARGANDO…</li></ol>
         <div class="top5-note" id="top5-note1"></div>
       </div>
-      <button class="btn" id="play-btn">PLAY</button>
+      <button class="btn" id="play-btn">JUGAR</button>
     </div>
   </div>
 
   <!-- GAME OVER PANEL -->
   <div class="panel off" id="over-panel">
     <div class="panel-in">
-      <div class="panel-sub">// grid resolved //</div>
-      <h2 class="panel-title">GAME<b>OVER</b></h2>
-      <div class="final-lbl">FINAL SCORE</div>
+      <div class="panel-sub">// tablero resuelto //</div>
+      <h2 class="panel-title">FIN DEL<b>JUEGO</b></h2>
+      <div class="final-lbl">PUNTAJE FINAL</div>
       <div id="final">0</div>
-      <div id="rank">SPARK</div>
-      <div id="new-best" class="newbest off">NEW BEST</div>
-      <div class="over-best">BEST&nbsp;&nbsp;<b id="best-final">0</b></div>
+      <div id="rank">CHISPA</div>
+      <div id="new-best" class="newbest off">NUEVO RÉCORD</div>
+      <div class="over-best">MÁXIMO&nbsp;&nbsp;<b id="best-final">0</b></div>
       <div id="enter-wrap" class="enter-wrap off">
-        <div class="enter-lbl">// YOU MADE THE TOP 5 — ENTER CALLSIGN //</div>
+        <div class="enter-lbl">// ENTRASTE AL TOP 5 — INGRESÁ TU APODO //</div>
         <div class="enter-row">
-          <input id="name-in" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NAME" />
+          <input id="name-in" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NOMBRE" />
           <span id="name-count">0/10</span>
-          <button class="btn mini" id="save-btn">SAVE</button>
+          <button class="btn mini" id="save-btn">GUARDAR</button>
         </div>
       </div>
       <div class="top5-wrap over">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode2">LOCAL</span></div>
-        <ol class="top5" id="top5-over"><li class="t5-loading">LOADING…</li></ol>
+        <ol class="top5" id="top5-over"><li class="t5-loading">CARGANDO…</li></ol>
         <div class="top5-note" id="top5-note2"></div>
       </div>
-      <button class="btn mag" id="again-btn">PLAY AGAIN</button>
+      <button class="btn mag" id="again-btn">JUGAR DE NUEVO</button>
     </div>
   </div>
 </div>

@@ -523,58 +523,142 @@ const JSONBLOB_URL = 'https://jsonblob.com/api/jsonBlob/01a0409a-f632-75de-a4eb-
 const SUPA_URL = '';
 const SUPA_KEY = '';
 
+/* accepts both the viewer URL (jsonblob.com/<id>) and the API URL
+   (jsonblob.com/api/jsonBlob/<id>) — normalized automatically */
+const LB_URL = (()=>{
+  const u=(JSONBLOB_URL||'').trim();
+  if(!u) return '';
+  const m=u.match(/jsonblob\.com\/(?:api\/jsonBlob\/)?([0-9a-fA-F-]+)/i);
+  return m ? 'https://jsonblob.com/api/jsonBlob/'+m[1] : u;
+})();
+
 const LB = {
-  mode:(JSONBLOB_URL) ? 'JSON' : (SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
+  mode:(LB_URL) ? 'JSON' : (SUPA_URL && SUPA_KEY) ? 'GLOBAL' : 'LOCAL',
+  hasRemote(){ return this.mode!=='LOCAL'; },
   _hd(){ return { apikey:SUPA_KEY, Authorization:'Bearer '+SUPA_KEY }; },
-  async load(){
+
+  /* local cache — the single source of truth while offline */
+  loadLocal(){ try{ return JSON.parse(localStorage.getItem('nc-top5')||'[]'); }catch(e){ return []; } },
+  _cache(l){ try{ localStorage.setItem('nc-top5',JSON.stringify(l.slice(0,5))); }catch(e){} },
+  _localPush(name,score){
+    const l=this.loadLocal(); l.push({name,score});
+    l.sort((a,b)=>b.score-a.score); this._cache(l);
+  },
+
+  /* offline sync queue — scores waiting for the global ranking */
+  queue(){ try{ return JSON.parse(localStorage.getItem('nc-queue')||'[]'); }catch(e){ return []; } },
+  pending(){ return this.queue().length; },
+  _enqueue(name,score){
+    const q=this.queue(); q.push({name,score,ts:Date.now()});
+    try{ localStorage.setItem('nc-queue',JSON.stringify(q)); }catch(e){}
+  },
+
+  /* remote calls (throw on any network/HTTP failure)
+     this.err → 'missing' = blob 404 (no existe) · 'http' = otro error */
+  err:null,
+  async _remoteLoad(){
+    this.err=null;
     if(this.mode==='GLOBAL'){
-      try{
-        const r=await fetch(SUPA_URL+'/rest/v1/neon_scores?select=name,score&order=score.desc,id.asc&limit=5',{headers:this._hd()});
-        if(r.ok) return await r.json();
-      }catch(e){ /* offline → fall through to local */ }
+      const r=await fetch(SUPA_URL+'/rest/v1/neon_scores?select=name,score&order=score.desc,id.asc&limit=5',{headers:this._hd()});
+      if(!r.ok){ this.err='http'; throw new Error(r.status); }
+      return await r.json();
     }
-    if(this.mode==='JSON'){
-      try{
-        const r=await fetch(JSONBLOB_URL,{headers:{Accept:'application/json'}});
-        if(r.ok){ const j=await r.json(); if(Array.isArray(j)) return j.slice(0,5); }
-      }catch(e){ /* offline → fall through to local */ }
+    const r=await fetch(LB_URL,{headers:{Accept:'application/json'}});
+    if(!r.ok){
+      this.err = r.status===404 ? 'missing' : 'http';
+      console.warn('[NeonCrush] JSON Blob respondió '+r.status+
+        (r.status===404?' — el blob NO existe. Crealo gratis en https://jsonblob.com/editor/json (pegá []) y actualizá JSONBLOB_URL.':''));
+      throw new Error(r.status);
+    }
+    const j=await r.json();
+    if(!Array.isArray(j)) throw new Error('bad json');
+    return j.slice(0,5);
+  },
+  async _remoteSave(name,score){
+    if(this.mode==='GLOBAL'){
+      const r=await fetch(SUPA_URL+'/rest/v1/neon_scores',{
+        method:'POST',
+        headers:{ ...this._hd(), 'Content-Type':'application/json' },
+        body:JSON.stringify({name,score})
+      });
+      if(!r.ok) throw new Error(r.status);
+      return;
+    }
+    const l=await this._remoteLoad();
+    l.push({name,score});
+    l.sort((a,b)=>b.score-a.score);
+    await this._remotePut(l.slice(0,5));
+  },
+  async _remotePut(list){
+    const r=await fetch(LB_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json', Accept:'application/json'},
+      body:JSON.stringify(list)
+    });
+    if(!r.ok) throw new Error('PUT '+r.status);
+  },
+
+  /* ── public API ──
+     online  → reads/writes the global ranking (JSON or DB) and refreshes the cache
+     offline → reads/compares against the local top 5, and queues the score
+               so it syncs to the global ranking as soon as internet returns */
+  async load(){
+    if(this.hasRemote() && navigator.onLine){
+      try{ const l=await this._remoteLoad(); this._cache(l); return l; }
+      catch(e){ /* network down → local cache */ }
     }
     return this.loadLocal();
   },
-  loadLocal(){ try{ return JSON.parse(localStorage.getItem('nc-top5')||'[]'); }catch(e){ return []; } },
   async save(name,score){
-    if(this.mode==='GLOBAL'){
-      try{
-        const r=await fetch(SUPA_URL+'/rest/v1/neon_scores',{
-          method:'POST',
-          headers:{ ...this._hd(), 'Content-Type':'application/json' },
-          body:JSON.stringify({name,score})
-        });
-        if(r.ok) return {ok:true};
-      }catch(e){ /* offline → also keep a local copy */ }
+    this._localPush(name,score);                    // local top 5 always updated
+    if(!this.hasRemote()) return {ok:true};
+    if(navigator.onLine){
+      try{ await this._remoteSave(name,score); await this.flush(); return {ok:true, synced:true}; }
+      catch(e){ /* treat as offline — unless the blob simply doesn't exist */ }
     }
-    if(this.mode==='JSON'){
-      try{
-        const l=await this.load();
-        l.push({name,score});
-        l.sort((a,b)=>b.score-a.score);
-        await fetch(JSONBLOB_URL,{
-          method:'PUT',
-          headers:{'Content-Type':'application/json', Accept:'application/json'},
-          body:JSON.stringify(l.slice(0,5))
-        });
-        return {ok:true};
-      }catch(e){ /* offline → keep a local copy */ }
+    if(this.err==='missing') return {ok:true, fatal:true};  // a 404 will never sync: don't queue
+    this._enqueue(name,score);                      // offline → sync later
+    return {ok:true, queued:true};
+  },
+  async flush(){
+    if(!this.hasRemote() || !navigator.onLine) return 0;
+    const q=this.queue(); if(!q.length) return 0;
+    let sent=0;
+    for(const e of q){
+      try{ await this._remoteSave(e.name,e.score); sent++; }
+      catch(err){ break; }                          // still offline → keep the rest
     }
-    const l=this.loadLocal();
-    l.push({name,score});
-    l.sort((a,b)=>b.score-a.score);
-    try{ localStorage.setItem('nc-top5',JSON.stringify(l.slice(0,5))); }catch(e){}
-    return {ok:true};
+    if(sent) try{ localStorage.setItem('nc-queue',JSON.stringify(q.slice(sent))); }catch(e){}
+    return sent;
   },
   qualifies(list,score){
     return score>0 && (list.length<5 || score>list[list.length-1].score);
   }
+};
+
+/* debug helper — in the browser console run:  NC_LB_TEST()  */
+window.NC_LB_TEST = async function(){
+  const log=(...a)=>console.log('%c[NEON-CRUSH]','color:#00e5ff;font-weight:bold',...a);
+  if(LB.mode==='LOCAL'){ log('modo LOCAL — no hay backend configurado en index.html'); return; }
+  log('modo '+LB.mode+' → URL:', LB.mode==='JSON' ? LB_URL : SUPA_URL);
+  let before;
+  try{ before=await LB._remoteLoad(); }
+  catch(e){
+    log('\u2718 GET falló ('+e.message+') → el blob no existe o es privado');
+    log('  crealo en jsonblob.com/editor/json pegando [] — si ya existe, es privado: rehacelo anónimo o usá Supabase (README.md)');
+    return;
+  }
+  log('\u2714 GET ok — ranking actual:', JSON.stringify(before));
+  if(LB.mode!=='JSON'){ log('modo GLOBAL: escritura inserta filas reales, se probó solo lectura'); return; }
+  try{
+    const test=[...before,{name:'TEST',score:1}].sort((a,b)=>b.score-a.score).slice(0,5);
+    await LB._remotePut(test);
+    const after=await LB._remoteLoad();
+    if(!after.some(s=>s.name==='TEST'&&s.score===1)){ log('\u2718 PUT respondió ok pero el dato no quedó guardado'); return; }
+    log('\u2714 PUT ok — escritura funciona');
+    await LB._remotePut(before);
+    log('\u2714 blob restaurado — TODO FUNCIONA, los jugadores ya pueden guardar');
+  }catch(e){ log('\u2718 PUT falló ('+e.message+')'); }
 };
 
 /* ─────────────────────────── STATE ──────────────────────────── */
@@ -871,14 +955,50 @@ const UI = {
   },
   hideOverlay(){ gsap.to(this.overlay,{autoAlpha:0,duration:.35,ease:'power2.inOut'}); },
   setModeTag(el, noteEl){
-    el.textContent=LB.mode;
-    el.classList.toggle('local', LB.mode==='LOCAL');
+    const off = LB.hasRemote() && !navigator.onLine;
+    const pend = LB.pending();
+    el.textContent = off ? 'OFFLINE' : LB.mode;
+    el.classList.toggle('local', LB.mode==='LOCAL' || off);
     const NOTES={
       LOCAL:'LOCAL \u00b7 cada dispositivo guarda su propio top 5 \u2014 activ\u00e1 el ranking mundial pegando el JSON/DB gratis en index.html (README.md)',
       JSON:'JSON \u00b7 ranking guardado en un archivo JSON en la nube \u2014 visible para todos los que jueguen con el link',
       GLOBAL:'GLOBAL \u00b7 base de datos compartida \u2014 todos los jugadores ven el mismo top 5'
     };
-    if(noteEl) noteEl.textContent=NOTES[LB.mode];
+    let note=NOTES[LB.mode];
+    if(off){
+      note='SIN CONEXI\u00d3N \u00b7 mostrando tu top 5 local \u2014 '
+        +(pend ? pend+' puntaje'+(pend>1?'s':'')+' en cola' : 'tu puntaje')
+        +' se sincronizar\u00e1n con el ranking global al volver internet';
+    }else if(LB.err==='missing'){
+      el.textContent=LB.mode+' \u2715';
+      note='\u26a0 BLOB NO ENCONTRADO (404) \u00b7 crealo gratis en jsonblob.com/editor/json, peg\u00e1 [] y guard\u00e1 \u2014 luego copi\u00e1 la URL del blob y actualiz\u00e1 JSONBLOB_URL en index.html. Mientras tanto se guarda LOCAL.';
+    }else if(pend){
+      note+=' \u00b7 '+pend+' en cola de sincronizaci\u00f3n';
+    }
+    if(noteEl) noteEl.textContent=note;
+  },
+  /* re-fetch + repaint whatever ranking panel is on screen */
+  refreshRanking(){
+    const onStart=!this.startPanel.classList.contains('off');
+    const onOver=!this.overPanel.classList.contains('off');
+    if(onStart){
+      this.setModeTag($('#top5-mode'), $('#top5-note1'));
+      $('#top5-start').innerHTML='<li class="t5-loading">LOADING\u2026</li>';
+      LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
+    }
+    if(onOver){
+      this.setModeTag($('#top5-mode2'), $('#top5-note2'));
+      LB.load().then(l=>this.renderTop5($('#top5-over'),l,this._lastMe||null));
+    }
+  },
+  /* feedback when the offline queue finally reaches the global ranking */
+  syncToast(n){
+    const W=N*CFG.cell/2;
+    this.floatText(W, W*.26, 'SYNCED '+n+' SCORE'+(n>1?'S':'')+' \u2192 GLOBAL',
+      {color:'#a3ff12', size:16, dur:1.5});
+    ring(W,W*.26,'#a3ff12',{from:.4,to:3.2,dur:.55});
+    AudioFX.bonus();
+    this.refreshRanking();
   },
   renderTop5(el,list,me){
     el.textContent='';
@@ -908,6 +1028,7 @@ const UI = {
   },
   showGameOver(final,best,isNew,list){
     this.startPanel.classList.add('off'); this.overPanel.classList.remove('off');
+    this._lastMe=null;
     this.rankEl.textContent = rankFor(final);
     this.nbEl.classList.toggle('off', !isNew);
     this.bestFinalEl.textContent = best;
@@ -939,14 +1060,25 @@ const UI = {
       inp.focus(); return;
     }
     try{ localStorage.setItem('nc-name',name); }catch(e){}
-    inp.disabled=true; btn.disabled=true; btn.textContent='SAVED';
+    inp.disabled=true; btn.disabled=true;
     AudioFX.bonus();
-    await LB.save(name, this._pending);
+    const res=await LB.save(name, this._pending);
+    btn.textContent = res.fatal ? 'LOCAL' : res.queued ? 'QUEUED' : 'SAVED';
+    this._lastMe={name, score:this._pending};
     const list=await LB.load();
-    this.renderTop5($('#top5-over'), list, {name, score:this._pending});
+    this.renderTop5($('#top5-over'), list, this._lastMe);
     const W=N*CFG.cell/2;
     particles.burst(W,W*.3,'#a3ff12',16,1.4);
     ring(W,W*.3,'#a3ff12',{from:.4,to:3,dur:.5});
+    if(res.fatal){
+      this.floatText(W,W*.62,'BLOB 404 \u00b7 GUARDADO LOCAL \u2014 VER README.md',
+        {color:'#ff4d5e',size:12,dur:2.2});
+      AudioFX.warn();
+    }else if(res.queued){
+      this.floatText(W,W*.62,'OFFLINE \u00b7 SE SINCRONIZAR\u00c1 AL VOLVER INTERNET',
+        {color:'#ffb300',size:12,dur:1.8});
+      AudioFX.warn();
+    }
   },
 };
 
@@ -1458,6 +1590,15 @@ class Game{
       $('#save-btn').disabled=!e.target.value.trim();
     });
     $('#name-in').addEventListener('keydown', e=>{ if(e.key==='Enter') UI.saveName(); });
+    /* connectivity: repaint the ranking + flush the offline sync queue */
+    window.addEventListener('online', ()=>{
+      UI.refreshRanking();
+      LB.flush().then(n=>{ if(n) UI.syncToast(n); });
+    });
+    window.addEventListener('offline', ()=>UI.refreshRanking());
+    setInterval(()=>{
+      if(LB.pending()) LB.flush().then(n=>{ if(n) UI.syncToast(n); });
+    }, 20000);
     $('#mute').addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); });
     UI.showStart();
   }

@@ -19,39 +19,87 @@ lo que buscás: un "archivo JSON en la nube" o una DB liviana, visibles desde cu
 | Modo | Dónde vive el ranking | Registro | Tag en el juego |
 |---|---|---|---|
 | LOCAL | `localStorage` de cada jugador | ninguno | `LOCAL` |
-| JSON | archivo JSON en jsonblob.com | **ninguno** | `JSON` |
-| GLOBAL | Postgres gratis en Supabase | cuenta gratis | `GLOBAL` |
+| ~~JSON~~ | ~~archivo JSON en jsonblob.com~~ | ~~ninguno~~ | ~~`JSON`~~ ⚠️ bloqueado |
+| **GLOBAL** ✅ | Postgres gratis en Supabase | cuenta gratis | `GLOBAL` |
 
 Con LOCAL funciona igual, pero cada dispositivo ve su propio Top 5.
 
 ---
 
-## 🅰️ Opción JSON — ranking mundial sin crear cuentas (2 minutos)
+## 🅰️ Opción JSON — jsonblob.com (⚠️ BLOQUEADO, usá la 🅱️)
 
-1. Creá el "archivo" JSON. Con curl (Git Bash / Terminal / PowerShell):
+> **⚠️ AVISO:** jsonblob.com está detrás de **Cloudflare y rechaza las llamadas a su
+> API** con una página de bloqueo (error 403 "Attention Required"), tanto para leer como
+> para guardar. Tus PUT/GET nunca llegan al servicio, así que el ranking no funciona.
+> **Pasá directamente a la opción 🅱️ (Supabase)**: es gratis, confiable y ya está
+> implementada en el juego.
 
-   ```bash
-   curl -i -X POST https://jsonblob.com/api/jsonBlob \
-     -H "Content-Type: application/json" -H "Accept: application/json" -d "[]"
-   ```
+1. **Creá el blob desde el navegador** (lo más fácil, sin terminal):
 
-   Copiá la URL que aparece en la cabecera `Location:` de la respuesta, algo como:
-   `https://jsonblob.com/api/jsonBlob/1234567890123456789`
+   - Entrá a https://jsonblob.com/editor/json
+   - En el editor pegá exactamente: `[]`
+   - Dale **Save** y copiá la **URL del blob** que te da (algo como
+     `https://jsonblob.com/api/jsonBlob/1234567890123456789`).
 
-   (Alternativa: entrá a https://jsonblob.com, pegá `[]`, guardalo y copiá la URL del blob.)
+   Verificá que exista abriendo esa URL en el navegador: debe mostrarte `[]`.
+   Si ves una página **404**, el blob no se creó — repetí el paso.
 
-2. Abrí `index.html`, buscá al inicio del `<script>` y pegá esa URL:
+   > Alternativa con curl (macOS / Linux / Git Bash). ⚠️ En **Windows PowerShell** el
+   > alias `curl` NO acepta esta sintaxis; usá Git Bash o `curl.exe`:
+   >
+   > ```bash
+   > curl -i -X POST https://jsonblob.com/api/jsonBlob \
+   >   -H "Content-Type: application/json" -H "Accept: application/json" -d "[]"
+   > ```
+   >
+   > Copiá la URL de la cabecera `Location:` de la respuesta.
+
+2. Abrí `index.html`, buscá al inicio del `<script>` y pegá esa URL. El juego acepta
+   **ambos formatos** (la URL de la API y la del visor `jsonblob.com/<id>`) y la
+   normaliza solo:
 
    ```js
    const JSONBLOB_URL = 'https://jsonblob.com/api/jsonBlob/1234567890123456789';
    ```
 
-3. Listo: el tag del ranking pasa a decir **JSON** y todos los que jueguen con tu link
+3. **Verificá que el blob sea público** (importante: si lo creaste con tu cuenta puede
+   ser privado y responder 404 al resto del mundo).
+
+   **Desde la consola del navegador** (la más rápida): abrí el juego, `F12` → pestaña
+   *Console*, y ejecutá:
+
+   ```js
+   NC_LB_TEST()
+   ```
+
+   Si todo anda vas a ver `✔ GET ok`, `✔ PUT ok` y `✔ blob restaurado — TODO FUNCIONA`.
+   La prueba escribe una entrada temporal y después deja el blob exactamente como estaba.
+
+   **Con Postman:**
+
+   - **Leer (GET):** creá una request `GET` a
+     `https://jsonblob.com/api/jsonBlob/TU_ID` y mandala.
+     → debe responder **200 OK** con el contenido (`[]` al principio).
+     → si responde **404**, el blob no existe o es privado.
+   - **Guardar (PUT):** creá una request `PUT` a la misma URL, en *Headers* agregá
+     `Content-Type: application/json` y `Accept: application/json`, y en *Body* →
+     *raw* / *JSON* pegá:
+
+     ```json
+     [{"name":"POSTMAN","score":9999}]
+     ```
+
+     → debe responder **200 OK**. Repetí el GET: ahora tiene que devolver esa entrada.
+     (Terminá haciendo otro PUT con `[]` para limpiar tu prueba.)
+
+4. Listo: el tag del ranking pasa a decir **JSON** y todos los que jueguen con tu link
    ven y alimentan el mismo Top 5.
 
-> Nota honesta: jsonblob es un servicio gratuito sin garantías; quien conozca la URL del
-> blob podría editarlo, y dos guardados simultáneos podrían pisarse (rarísimo con pocos
-> jugadores). Para algo más robusto usá la opción 🅱️.
+> Nota honesta: jsonblob es un servicio gratuito sin garantías y hoy pide cuenta para
+> guardar — si tu blob queda privado el ranking no funciona para el resto (el test de
+> arriba lo detecta). Además quien conozca la URL del blob podría editarlo, y dos
+> guardados simultáneos podrían pisarse (rarísimo con pocos jugadores).
+> Para algo robusto y realmente compartido usá la opción 🅱️ (Supabase).
 
 ---
 
@@ -84,8 +132,26 @@ insertar puntajes, nada más.
    const SUPA_KEY = 'eyJhbGciOi...';
    ```
 
-El tag del ranking pasa a decir **GLOBAL**. (Si completás ambas opciones, JSON gana por
-prioridad; dejá `JSONBLOB_URL` vacío para usar Supabase.)
+El tag del ranking pasa a decir **GLOBAL**.
+
+> ⚠️ Como jsonblob está bloqueado por Cloudflare, **dejá `JSONBLOB_URL` vacío** y
+> completá solo `SUPA_URL` + `SUPA_KEY` para tener el ranking mundial funcionando.
+
+---
+
+## 📡 Sin conexión a internet (modo OFFLINE)
+
+Si el jugador pierde la conexión (o el servicio no responde), el juego automáticamente:
+
+1. Muestra y compara contra su **top 5 local** — la etiqueta del ranking cambia a
+   **OFFLINE** en ámbar y la nota explica el estado.
+2. Si el puntaje entra en el top 5, se guarda igual y queda **en cola**
+   (el botón dice `QUEUED` y se avisa "se sincronizará al volver internet").
+3. Cuando vuelve la conexión — evento `online` del navegador o reintento automático
+   cada 20 segundos — la cola se **sincroniza sola con el ranking global**: aparece el
+   aviso `SYNCED N SCORES → GLOBAL` con explosión de partículas y el Top 5 se refresca.
+
+Sin conexión nadie pierde su puntaje; con conexión, todos comparten el mismo ranking.
 
 ---
 

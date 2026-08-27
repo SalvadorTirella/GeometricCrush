@@ -211,18 +211,18 @@ input, select, textarea{ font-size:16px; }
 .s-hole::after{ content:''; position:absolute; inset:29%; border-radius:50%; background:#000;
   box-shadow:0 0 14px 4px rgba(176,107,255,.7), inset 0 0 9px rgba(176,107,255,.5); }
 @keyframes holeSpin{ to{ transform:rotate(360deg); } }
-/* sun — compact hot-orange star with rotating corona (20K · 3 suns collapse into a black hole) */
+/* sun — compact reddish-yellow (sunset) star with rotating corona · 20K · 3 suns collapse into a black hole */
 .s-sun{ inset:11%; border-radius:50%;
-  background:radial-gradient(circle at 36% 30%, #fff8dc 0 16%, #ffe373 34%, #ffb52e 60%, #f07f13 100%); }
+  background:radial-gradient(circle at 36% 30%, #fff3c4 0 14%, #ffd166 32%, #ff9a3d 58%, #ff5f1f 82%, #e8400c 100%); }
 .s-sun::before{ content:''; position:absolute; inset:-16%; border-radius:50%;
   background:conic-gradient(from 0deg,
-    transparent 0 9deg, #ffd166 9deg 15deg, transparent 15deg 40deg,
-    #ff8c1a 40deg 46deg, transparent 46deg 70deg, #ffd166 70deg 76deg, transparent 76deg 100deg,
-    #ff8c1a 100deg 106deg, transparent 106deg 130deg, #ffd166 130deg 136deg, transparent 136deg 160deg,
-    #ff8c1a 160deg 166deg, transparent 166deg 190deg, #ffd166 190deg 196deg, transparent 196deg 220deg,
-    #ff8c1a 220deg 226deg, transparent 226deg 250deg, #ffd166 250deg 256deg, transparent 256deg 280deg,
-    #ff8c1a 280deg 286deg, transparent 286deg 310deg, #ffd166 310deg 316deg, transparent 316deg 340deg,
-    #ff8c1a 340deg 346deg, transparent 346deg 360deg);
+    transparent 0 9deg, #ffb52e 9deg 15deg, transparent 15deg 40deg,
+    #ff4d1a 40deg 46deg, transparent 46deg 70deg, #ffb52e 70deg 76deg, transparent 76deg 100deg,
+    #ff4d1a 100deg 106deg, transparent 106deg 130deg, #ffb52e 130deg 136deg, transparent 136deg 160deg,
+    #ff4d1a 160deg 166deg, transparent 166deg 190deg, #ffb52e 190deg 196deg, transparent 196deg 220deg,
+    #ff4d1a 220deg 226deg, transparent 226deg 250deg, #ffb52e 250deg 256deg, transparent 256deg 280deg,
+    #ff4d1a 280deg 286deg, transparent 286deg 310deg, #ffb52e 310deg 316deg, transparent 316deg 340deg,
+    #ff4d1a 340deg 346deg, transparent 346deg 360deg);
   -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%);
           mask:radial-gradient(circle, transparent 56%, #000 58%);
   animation:holeSpin 5s linear infinite; }
@@ -629,8 +629,8 @@ body.q-noglow .tag{ text-shadow:none; }
 /* per-mode accent glow */
 .cosmic-card[data-diff="planet"]:hover{ box-shadow:inset 0 0 0 1px rgba(163,255,18,.6), 0 14px 44px rgba(163,255,18,.16); }
 .cosmic-card[data-diff="planet"] .csub{ color:var(--lime); text-shadow:0 0 12px rgba(163,255,18,.6); }
-.cosmic-card[data-diff="sun"]:hover{ box-shadow:inset 0 0 0 1px rgba(255,166,43,.6), 0 14px 44px rgba(255,166,43,.16); }
-.cosmic-card[data-diff="sun"] .csub{ color:#ffa62b; text-shadow:0 0 12px rgba(255,166,43,.6); }
+.cosmic-card[data-diff="sun"]:hover{ box-shadow:inset 0 0 0 1px rgba(255,111,67,.6), 0 14px 44px rgba(255,111,67,.18); }
+.cosmic-card[data-diff="sun"] .csub{ color:#ff6f43; text-shadow:0 0 12px rgba(255,111,67,.6); }
 .cosmic-card[data-diff="hole"]:hover{ box-shadow:inset 0 0 0 1px rgba(176,107,255,.65), 0 14px 44px rgba(176,107,255,.2); }
 .cosmic-card[data-diff="hole"] .csub{ color:#c99aff; text-shadow:0 0 12px rgba(176,107,255,.65); }
 /* celestial bodies inside cards */
@@ -644,15 +644,15 @@ body.q-noglow .tag{ text-shadow:none; }
 .vis-planet::after{ content:''; position:absolute; inset:0; border-radius:50%;
   background:radial-gradient(circle at 66% 20%, rgba(255,255,255,.85), transparent 30%); }
 .vis-sun{ inset:8%; border-radius:50%;
-  background:radial-gradient(circle at 36% 30%, #fff8dc 0 16%, #ffe373 34%, #ffb52e 60%, #f07f13 100%);
-  box-shadow:0 0 40px rgba(255,166,43,.45); }
+  background:radial-gradient(circle at 36% 30%, #fff3c4 0 14%, #ffd166 32%, #ff9a3d 58%, #ff5f1f 82%, #e8400c 100%);
+  box-shadow:0 0 40px rgba(255,111,67,.5); }
 .vis-sun::before{ content:''; position:absolute; inset:-18%; border-radius:50%;
-  background:conic-gradient(from 0deg, transparent 0 12deg, #ffd166 12deg 20deg, transparent 20deg 45deg,
-    #ff8c1a 45deg 53deg, transparent 53deg 78deg, #ffd166 78deg 86deg, transparent 86deg 111deg,
-    #ff8c1a 111deg 119deg, transparent 119deg 144deg, #ffd166 144deg 152deg, transparent 152deg 177deg,
-    #ff8c1a 177deg 185deg, transparent 185deg 210deg, #ffd166 210deg 218deg, transparent 218deg 243deg,
-    #ff8c1a 243deg 251deg, transparent 251deg 276deg, #ffd166 276deg 284deg, transparent 284deg 309deg,
-    #ff8c1a 309deg 317deg, transparent 317deg 342deg, #ffd166 342deg 350deg, transparent 350deg 360deg);
+  background:conic-gradient(from 0deg, transparent 0 12deg, #ffb52e 12deg 20deg, transparent 20deg 45deg,
+    #ff4d1a 45deg 53deg, transparent 53deg 78deg, #ffb52e 78deg 86deg, transparent 86deg 111deg,
+    #ff4d1a 111deg 119deg, transparent 119deg 144deg, #ffb52e 144deg 152deg, transparent 152deg 177deg,
+    #ff4d1a 177deg 185deg, transparent 185deg 210deg, #ffb52e 210deg 218deg, transparent 218deg 243deg,
+    #ff4d1a 243deg 251deg, transparent 251deg 276deg, #ffb52e 276deg 284deg, transparent 284deg 309deg,
+    #ff4d1a 309deg 317deg, transparent 317deg 342deg, #ffb52e 342deg 350deg, transparent 350deg 360deg);
   -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%); mask:radial-gradient(circle, transparent 56%, #000 58%);
   animation:holeSpin 6s linear infinite; }
 .vis-sun::after{ content:''; position:absolute; inset:0; border-radius:50%;
@@ -748,7 +748,7 @@ body.q-noglow .tag{ text-shadow:none; }
         <i style="--c:#ff4d5e"><span class="shape s-hexagon t4"></span></i>
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
         <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>10K</em></i>
-        <i class="lk" style="--c:#ffa62b"><span class="shape s-sun t7"></span><em>20K</em></i>
+        <i class="lk" style="--c:#ff6f43"><span class="shape s-sun t7"></span><em>20K</em></i>
         <i class="lk" style="--c:#b3bac9"><span class="shape s-meteor t8"></span><em>30K</em></i>
       </div>
       <ul class="how">
@@ -929,7 +929,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.4.2';  // meteoritos combinan de a 3+ y lanzan fragmentos que caen y destruyen bloques (3→5, 4→8, 5→12)
+const APP_VERSION = 'v1.4.3';  // fragmentos de meteorito a casillas aleatorias dispersas + soles amarillo-rojizos (rombos sin cambios)
 const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000, voidMs:18000 };
 
 /* ══ COSMIC DIFFICULTY — each body rewrites the rules of the board ══
@@ -957,7 +957,7 @@ const TYPES = [
   { color:'#ff4d5e', shape:'hexagon'  },
   { color:'#9d5cff', shape:'star'     },
   { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 10K */
-  { color:'#ffa62b', shape:'sun'      },  /* type 7 — unlocks at 20K · 3 suns collapse into a black hole */
+  { color:'#ff6f43', shape:'sun'      },  /* type 7 — unlocks at 20K · 3 suns collapse into a black hole */
   { color:'#b3bac9', shape:'meteor'   },  /* type 8 — 30K · gray rock, only falls from the sky in storms */
 ];
 const RANKS = [[25000,'LEYENDA NEÓN'],[16000,'SOBRECARGA'],[10000,'ALTO VOLTAJE'],[6000,'SOBRETENSIÓN'],[3000,'CHISPA'],[0,'ESTÁTICA']];
@@ -1703,7 +1703,7 @@ const Score = {
     const prev=this.score;
     this.score+=Math.round(n*this.mult); UI.renderScore(this.score); UI.popScore();
     if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('AGUJERO NEGRO DESBLOQUEADO','#b06bff');
-    if(prev<CFG.sunAt && this.score>=CFG.sunAt) UI.unlockFX('SOL DESBLOQUEADO','#ffa62b');
+    if(prev<CFG.sunAt && this.score>=CFG.sunAt) UI.unlockFX('SOL DESBLOQUEADO','#ff6f43');
     if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('TORMENTA DE METEOROS DESBLOQUEADA','#b3bac9','ROCAS ARDIENTES CAERÁN DEL CIELO');
   },
 };
@@ -1881,13 +1881,14 @@ const Anim = {
         const size=5+Math.random()*8;
         frag.style.width=size+'px'; frag.style.height=size+'px';
         fxEl.appendChild(frag);
-        const peakX=cx+(tx-cx)*.5+(Math.random()*70-35);
-        const peakY=Math.min(cy,ty)-70-Math.random()*70;
+        /* high, jittered arc so each fragment clearly flies to its own far tile */
+        const peakX=cx+(tx-cx)*(0.3+Math.random()*0.4)+(Math.random()*120-60);
+        const peakY=Math.min(cy,ty)-(90+Math.random()*110);
         gsap.set(frag,{x:cx-size/2,y:cy-size/2,rotation:Math.random()*180,scale:1});
-        gsap.timeline({delay:i*.035})
-          .to(frag,{x:peakX,y:peakY,duration:.26,ease:'power1.out'})
-          .to(frag,{x:tx-size/2,y:ty-size/2,rotation:'+='+(Math.random()*420-210),
-            duration:.32,ease:'power2.in'})
+        gsap.timeline({delay:i*.05})
+          .to(frag,{x:peakX,y:peakY,duration:.3,ease:'power1.out'})
+          .to(frag,{x:tx-size/2,y:ty-size/2,rotation:'+='+(Math.random()*560-280),
+            duration:.34,ease:'power2.in'})
           .call(()=>{
             particles.burst(tx,ty,'#b3bac9',5,.85);
             ring(tx,ty,'#ff9b3d',{from:.3,to:1.7,dur:.3});
@@ -2489,7 +2490,7 @@ class Game{
     AudioFX.deal();
     await this.dealIn();
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell/2;
-    const acc=this.diff.key==='hole'?'#b06bff':this.diff.key==='planet'?'#a3ff12':'#ffa62b';
+    const acc=this.diff.key==='hole'?'#b06bff':this.diff.key==='planet'?'#a3ff12':'#ff6f43';
     ring(W,H,acc,{from:.5,to:6.2,dur:.7});
     particles.burst(W,H,acc,16,1.3);
     UI.floatText(W,H-CFG.cell*.4,'ÓRBITA '+this.diff.label,{color:acc,size:19,dur:1.1});
@@ -2626,7 +2627,7 @@ class Game{
       const cellSet=new Set();
       runs.forEach(run=>run.cells.forEach(([r,c])=>cellSet.add(r*COLS+c)));
       const impactPlans=plans.filter(p=>p.kind==='meteorImpact');
-      const planSet=new Set(plans.filter(p=>p.kind!=='blast').map(p=>p.r*COLS+p.c));
+      const planSet=new Set(plans.filter(p=>p.kind!=='blast' && p.kind!=='meteorImpact').map(p=>p.r*COLS+p.c));
       let cx=0, cy=0;
       cellSet.forEach(k=>{ cx+=(k%COLS+.5)*CFG.cell; cy+=(((k/COLS)|0)+.5)*CFG.cell; });
       cx/=cellSet.size; cy/=cellSet.size;
@@ -2715,10 +2716,21 @@ class Game{
         const matchedSet=new Set(impactPlans[0].cells);
         const pool=this.board.all().filter(t=>
           !matchedSet.has(t.r*COLS+t.c) && !protect.has(t) && !t.void && t.type>=0);
+        /* pick targets that are truly random AND spread across the whole board
+           (never a line / cluster): shuffle, then greedily favor far-apart cells */
+        for(let i=pool.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [pool[i],pool[j]]=[pool[j],pool[i]]; }
         const targets=[];
-        for(let i=0;i<impact.numFrags && pool.length;i++){
-          const idx=(Math.random()*pool.length)|0;
-          targets.push(pool.splice(idx,1)[0]);
+        while(targets.length<impact.numFrags && pool.length){
+          let bestIdx=0, bestScore=-1;
+          for(let i=0;i<pool.length;i++){
+            const t=pool[i], [x,y]=center(t);
+            let minD=1e9;
+            for(const u of targets){ const [ux,uy]=center(u); const d=Math.hypot(x-ux,y-uy); if(d<minD)minD=d; }
+            if(!targets.length) minD=Math.random()*1e5;            /* first pick: pure random */
+            const score=minD + Math.random()*CFG.cell*1.5;         /* random tie-break keeps it organic */
+            if(score>bestScore){ bestScore=score; bestIdx=i; }
+          }
+          targets.push(pool.splice(bestIdx,1)[0]);
         }
         const live=targets.filter(t=>this.board.grid[t.r][t.c]===t);
         if(live.length){

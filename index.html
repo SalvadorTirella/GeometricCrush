@@ -210,13 +210,13 @@ button{ font:inherit; }
   background:radial-gradient(circle at 72% 22%, rgba(255,255,255,.9), transparent 32%); }
 /* meteor — burning rock, only matches in 5+ clusters (storms start at 30K) */
 .s-meteor{ clip-path:polygon(30% 3%, 64% 0%, 90% 18%, 100% 52%, 82% 86%, 48% 100%, 14% 84%, 0% 50%, 8% 18%);
-  background:radial-gradient(circle at 36% 30%, #ffe3b0 0 16%, #ff9b3d 40%, #e2551f 66%, #7c240e 100%); }
-.s-meteor::before{ content:''; position:absolute; inset:0;
-  background:radial-gradient(circle at 62% 62%, rgba(255,224,138,.95) 0 6%, transparent 13%),
-             radial-gradient(circle at 34% 68%, rgba(255,190,100,.9) 0 5%, transparent 11%),
-             radial-gradient(circle at 58% 28%, rgba(255,240,190,.9) 0 4%, transparent 9%); }
-.s-meteor::after{ content:''; position:absolute; inset:0;
-  box-shadow:inset 0 0 13px rgba(255,120,40,.85); animation:meteorGlow 1.5s ease-in-out infinite; }
+  background:radial-gradient(circle at 34% 30%, #e8ecf2 0 12%, #b3bac9 34%, #8a93a5 62%, #5c6474 100%); }
+.s-meteor::before{ content:''; position:absolute; width:20%; height:20%; left:24%; top:30%; border-radius:50%;
+  background:rgba(58,64,78,.55);
+  box-shadow:140% 90% 0 -2px rgba(58,64,78,.5), 60% 170% 0 -3px rgba(58,64,78,.42), 200% 10% 0 -1px rgba(58,64,78,.5); }
+.s-meteor::after{ content:''; position:absolute; inset:0; clip-path:inherit;
+  background:radial-gradient(circle at 66% 70%, rgba(255,150,60,.55), transparent 32%);
+  animation:meteorGlow 1.6s ease-in-out infinite alternate; }
 @keyframes meteorGlow{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
 .streak{ position:absolute; top:0; width:6px; border-radius:3px; pointer-events:none; z-index:7;
   background:linear-gradient(180deg, rgba(255,179,0,0), #ffb300 55%, #ffffff);
@@ -441,17 +441,16 @@ button{ font:inherit; }
   <header id="hud">
     <div class="hud-left">
       <div class="logo">NEON<b>CRUSH</b></div>
-      <div class="tag">MATCH-3 // ARCADE ENGINE</div>
+      <div class="tag">MATCH-3 // MOTOR ARCADE</div>
     </div>
     <div class="hud-mid">
-      <div class="chip score"><span class="lbl">SCORE</span><span class="val" id="score">0</span></div>
-      <div class="chip best"><span class="lbl">BEST</span><span class="val" id="best">0</span></div>
+      <div class="chip score"><span class="lbl">PUNTOS</span><span class="val" id="score">0</span></div>
+      <div class="chip best"><span class="lbl">MEJOR</span><span class="val" id="best">0</span></div>
     </div>
     <div class="hud-right">
-      <div class="chip moves" id="moves-chip"><span class="lbl">MOVIMIENTOS</span><span class="val" id="moves">25</span></div>
-       </br>
-      <button id="crush" disabled aria-label="Crush: scramble the board">CRUSH<span class="sub" id="crush-t">60s</span><i class="cool" id="crush-cool"></i></button>
-      <button id="mute" aria-label="Toggle sound">
+      <div class="chip moves" id="moves-chip"><span class="lbl">JUGADAS</span><span class="val" id="moves">25</span></div>
+      <button id="crush" disabled aria-label="Crush: mezclar el tablero">CRUSH<span class="sub" id="crush-t">60s</span><i class="cool" id="crush-cool"></i></button>
+      <button id="mute" aria-label="Activar o silenciar el sonido">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/>
           <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
@@ -477,7 +476,7 @@ button{ font:inherit; }
   <!-- START PANEL -->
   <div class="panel" id="start-panel">
     <div class="panel-in">
-      <div class="panel-sub">// match-3 arcade //</div>
+      <div class="panel-sub">// arcade match-3 //</div>
       <h1 class="panel-title">NEON<b>CRUSH</b></h1>
       <div class="legend" aria-hidden="true">
         <i style="--c:#00e5ff"><span class="shape s-circle t0"></span></i>
@@ -491,21 +490,14 @@ button{ font:inherit; }
         <i class="lk" style="--c:#ff9b3d"><span class="shape s-meteor t8"></span><em>30K</em></i>
       </div>
       <ul class="how">
-        <li>Drag a gem — or tap two neighbours — to swap. Line up <b class="cy">3+</b> to crush.</li>
-        <li>Match <b class="mg">4</b> → LINE BOMB · <b class="mg">5+ gems</b> in one shape (straight 5, or combined L / T like 3H+3V) → COLOR BOMB.</li>
-        <li><b class="am">Double-click / double-tap</b> a power gem to detonate it.</li>
-        <li><b class="lm">25 moves</b>. Matches of 4+ grant <b class="lm">+2 bonus moves</b>; cascades multiply score.</li>
-        <li>Stall for <b class="cy">10s</b> and the grid bounces a combo for you — costing <b class="cr">−1 move</b>. Best score is kept in a browser cookie.</li>
-        <li>At <b class="vh">10K pts</b> BLACK HOLES join the grid: match 3 and <b class="vh">one survives</b>; combine <b class="vh">6</b> to forge a SINGULARITY that devours everything around it.</li>
-        <li>At <b class="mh">20K pts</b> MOONS appear: they match like regular gems but grant <b class="mh">no power</b>.</li>
-        <li>At <b class="mt">30K pts</b> METEOR STORMS begin: burning rocks crash onto the grid every 30s–2min. They only combine at <b class="mt">5+</b> — and their blast wipes out everything around.</li>
-
-        <li>Arrastrá una gema — o tocá dos vecinas — para intercambiarlas. Alineá <b class="cy">3+</b> para destruir.</li>
-        <li>Hacé combinación de <b class="mg">4</b> → BOMBA DE LÍNEA · <b class="mg">5+ gemas</b> en una forma (5 en línea, o L / T combinadas como 3H+3V) → BOMBA DE COLOR.</li>
-        <li><b class="am">Hacé doble clic / doble toque</b> en una gema especial para detonarla.</li>
-        <li><b class="lm">25 movimientos</b>. Las combinaciones de 4+ otorgan <b class="lm">+2 movimientos de bonificación</b>; las reacciones en cadena multiplican el puntaje.</li>
-        <li>Esperá <b class="cy">10s</b> sin moverte y el tablero te sugerirá un combo — costando <b class="cr">−1 movimiento</b>. El mejor puntaje se guarda en una cookie del navegador.</li>
-
+        <li>Arrastra una gema —o toca dos vecinas— para intercambiarlas. Alinea <b class="cy">3+</b> para aplastar.</li>
+        <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR.</li>
+        <li><b class="am">Doble clic / doble toque</b> sobre una gema de poder para detonarla.</li>
+        <li><b class="lm">25 jugadas</b>. Los matches de 4+ dan <b class="lm">+2 jugadas extra</b>; las cascadas multiplican los puntos.</li>
+        <li>Si te quedas <b class="cy">10s</b> sin jugar, el tablero rebota un combo por ti — a cambio de <b class="cr">−1 jugada</b>. Tu mejor puntaje se guarda en una cookie.</li>
+        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y gana <b class="vh">1 partícula</b> en órbita. Con <b class="vh">4 partículas</b> forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
+        <li>A los <b class="mh">20K pts</b> llegan las LUNAS: al juntar <b class="mh">3</b>, una sobrevive y gana <b class="mh">1 partícula</b>. Con <b class="mh">4 partículas</b> se convierte en un AGUJERO NEGRO.</li>
+        <li>A los <b class="mt">30K pts</b> comienzan las TORMENTAS DE METEORITOS: rocas grises caen al tablero cada 30s–2min. Solo se combinan de a <b class="mt">5+</b> — y su explosión arrasa todo lo que hay alrededor.</li>
       </ul>
       <div class="top5-wrap">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
@@ -520,14 +512,14 @@ button{ font:inherit; }
   <div class="panel off" id="over-panel">
     <div class="panel-in">
       <div class="panel-sub">// tablero resuelto //</div>
-      <h2 class="panel-title">FIN DEL<b>JUEGO</b></h2>
-      <div class="final-lbl">PUNTAJE FINAL</div>
+      <h2 class="panel-title">FIN<b>JUEGO</b></h2>
+      <div class="final-lbl">PUNTUACIÓN FINAL</div>
       <div id="final">0</div>
       <div id="rank">CHISPA</div>
       <div id="new-best" class="newbest off">NUEVO RÉCORD</div>
-      <div class="over-best">MÁXIMO&nbsp;&nbsp;<b id="best-final">0</b></div>
+      <div class="over-best">MEJOR&nbsp;&nbsp;<b id="best-final">0</b></div>
       <div id="enter-wrap" class="enter-wrap off">
-        <div class="enter-lbl">// ENTRASTE AL TOP 5 — INGRESÁ TU APODO //</div>
+        <div class="enter-lbl">// ENTRASTE AL TOP 5 — INGRESA TU NOMBRE //</div>
         <div class="enter-row">
           <input id="name-in" maxlength="10" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="NOMBRE" />
           <span id="name-count">0/10</span>
@@ -570,17 +562,17 @@ const TYPES = [
   { color:'#9d5cff', shape:'star'     },
   { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 10K */
   { color:'#ffe9a8', shape:'moon'     },  /* type 7 — unlocks at 20K */
-  { color:'#ff9b3d', shape:'meteor'   },  /* type 8 — 30K · only falls from the sky in storms */
+  { color:'#b3bac9', shape:'meteor'   },  /* type 8 — 30K · gray rock, only falls from the sky in storms */
 ];
-const RANKS = [[25000,'NEON LEGEND'],[16000,'OVERDRIVE'],[10000,'HIGH VOLTAGE'],[6000,'SURGE'],[3000,'SPARK'],[0,'STATIC']];
-/* gem pool grows with the score: 6 gems → +black hole at 20K → +moon at 50K */
+const RANKS = [[25000,'LEYENDA NEÓN'],[16000,'SOBRECARGA'],[10000,'ALTO VOLTAJE'],[6000,'SOBRETENSIÓN'],[3000,'CHISPA'],[0,'ESTÁTICA']];
+/* gem pool grows with the score: 6 gems → +black hole at 10K → +moon at 20K */
 function randType(){
   const s = (typeof Score!=='undefined') ? Score.score : 0;
   const pool = s>=CFG.moonAt ? 8 : s>=CFG.holeAt ? 7 : 6;
   return (Math.random()*pool)|0;
 }
 const wait  = ms => new Promise(r => gsap.delayedCall(ms/1000, r));
-const rankFor = s => { for (const [min,name] of RANKS) if (s >= min) return name; return 'STATIC'; };
+const rankFor = s => { for (const [min,name] of RANKS) if (s >= min) return name; return 'ESTÁTICA'; };
 
 const boardEl = $('#board'), fxEl = $('#fx');
 const center = t => [ (t.c+.5)*CFG.cell, (t.r+.5)*CFG.cell ];
@@ -1004,7 +996,7 @@ const UI = {
     const ready=rem<=0;
     this.crushBtn.disabled=!ready;
     this.crushBtn.classList.toggle('ready',ready);
-    this.crushT.textContent = ready ? 'READY' : Math.ceil(rem/1000)+'s';
+    this.crushT.textContent = ready ? '¡LISTO!' : Math.ceil(rem/1000)+'s';
     this.crushCool.style.width=Math.min(100,(g.playMs/CFG.crushMs)*100).toFixed(1)+'%';
     if(ready && !this._crushOn){
       this._crushOn=true; AudioFX.special();
@@ -1040,11 +1032,11 @@ const UI = {
     gsap.fromTo(this.scoreEl,{scale:1.34},{scale:1,duration:.35,ease:'back.out(3)',overwrite:true});
   },
   /* a new gem species has entered the pool */
-  unlockFX(text,color){
+  unlockFX(text,color,sub){
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell;
     flashBoard();
     this.floatText(W,H*.2,text,{color,size:17,dur:1.8});
-    this.floatText(W,H*.2+CFG.cell*.9,'NEW GEM IN THE GRID',{color:'#ffffff',size:11,dur:1.8});
+    this.floatText(W,H*.2+CFG.cell*.9, sub || 'NUEVA GEMA EN EL TABLERO',{color:'#ffffff',size:11,dur:1.8});
     ring(W,H*.32,color,{from:.5,to:5.6,dur:.7});
     ring(W,H*.32,'#ffffff',{from:.4,to:3.4,dur:.55,delay:.08});
     particles.burst(W,H*.32,color,20,1.6);
@@ -1081,7 +1073,7 @@ const UI = {
     const onOver=!this.overPanel.classList.contains('off');
     if(onStart){
       this.setModeTag($('#top5-mode'), $('#top5-note1'));
-      $('#top5-start').innerHTML='<li class="t5-loading">LOADING\u2026</li>';
+      $('#top5-start').innerHTML='<li class="t5-loading">CARGANDO\u2026</li>';
       LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
     }
     if(onOver){
@@ -1092,8 +1084,8 @@ const UI = {
   /* feedback when the offline queue finally reaches the global ranking */
   syncToast(n){
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell;
-    this.floatText(W, H*.2, 'SYNCED '+n+' SCORE'+(n>1?'S':'')+' \u2192 GLOBAL',
-      {color:'#a3ff12', size:16, dur:1.5});
+    this.floatText(W, H*.2, n+' PUNTO'+(n>1?'S':'')+' SINCRONIZADO'+(n>1?'S':'')+' \u2192 GLOBAL',
+      {color:'#a3ff12', size:14, dur:1.5});
     ring(W,H*.2,'#a3ff12',{from:.4,to:3.2,dur:.55});
     AudioFX.bonus();
     this.refreshRanking();
@@ -1102,7 +1094,7 @@ const UI = {
     el.textContent='';
     if(!list.length){
       const li=document.createElement('li'); li.className='t5-empty';
-      li.textContent='— NO SCORES YET —'; el.appendChild(li); return;
+      li.textContent='— AÚN SIN PUNTOS —'; el.appendChild(li); return;
     }
     let marked=false;
     list.slice(0,5).forEach((s,i)=>{
@@ -1111,7 +1103,7 @@ const UI = {
       const li=document.createElement('li'); li.className='t5-row'+(mine?' me':'');
       const rk=document.createElement('span'); rk.className='t5-rk r'+(i+1); rk.textContent=i+1;
       const nm=document.createElement('span'); nm.className='t5-name';
-      nm.textContent=s.name+(mine?' \u00b7YOU':'');
+      nm.textContent=s.name+(mine?' \u00b7T\u00da':'');
       const sc=document.createElement('span'); sc.className='t5-score'; sc.textContent=s.score;
       li.append(rk,nm,sc); el.appendChild(li);
     });
@@ -1119,8 +1111,7 @@ const UI = {
   showStart(){
     this.overPanel.classList.add('off'); this.startPanel.classList.remove('off');
     this.setModeTag($('#top5-mode'), $('#top5-note1'));
-    $('#top5-start').innerHTML='<li class="t5-loading">LOADING\u2026</li>';
-    LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
+      $('#top5-start').innerHTML='<li class="t5-loading">CARGANDO\u2026</li>';    LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
     gsap.to(this.overlay,{autoAlpha:1,duration:.3});
     gsap.fromTo(this.startPanel,{scale:.85,y:26,autoAlpha:0},{scale:1,y:0,autoAlpha:1,duration:.5,ease:'back.out(1.5)'});
   },
@@ -1161,7 +1152,7 @@ const UI = {
     inp.disabled=true; btn.disabled=true;
     AudioFX.bonus();
     const res=await LB.save(name, this._pending);
-    btn.textContent = res.fatal ? 'LOCAL' : res.queued ? 'QUEUED' : 'SAVED';
+    btn.textContent = res.fatal ? 'LOCAL' : res.queued ? 'EN COLA' : 'GUARDADO';
     this._lastMe={name, score:this._pending};
     const list=await LB.load();
     this.renderTop5($('#top5-over'), list, this._lastMe);
@@ -1187,9 +1178,9 @@ const Score = {
   add(n){
     const prev=this.score;
     this.score+=n; UI.renderScore(this.score); UI.popScore();
-    if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('BLACK HOLE UNLOCKED','#b06bff');
-    if(prev<CFG.moonAt && this.score>=CFG.moonAt) UI.unlockFX('MOON UNLOCKED','#ffe9a8');
-    if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('METEOR STORM UNLOCKED','#ff9b3d');
+    if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('AGUJERO NEGRO DESBLOQUEADO','#b06bff');
+    if(prev<CFG.moonAt && this.score>=CFG.moonAt) UI.unlockFX('LUNA DESBLOQUEADA','#ffe9a8');
+    if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('TORMENTA DE METEOROS DESBLOQUEADA','#b3bac9','ROCAS ARDIENTES CAERÁN DEL CIELO');
   },
 };
 const Combo = {
@@ -1354,6 +1345,7 @@ const Anim = {
 class Tile{
   constructor(type,r,c){
     this.type=type; this.special=null; this.r=r; this.c=c;
+    this.orb=0;   /* accumulated orbiting particles (black holes / moons) */
     const el=this.el=document.createElement('div');
     el.className='tile'; this.fit();
     el.style.setProperty('--bd',(Math.random()*-4).toFixed(2)+'s');
@@ -1365,8 +1357,7 @@ class Tile{
     inner.appendChild(shape); el.appendChild(inner);
     el._t=this;
     this.paint();
-    if(type===6) Special.orbitGem(this,3,false);   /* black hole sparks */
-    else if(type===7) Special.orbitGem(this,2,true); /* moon dust */
+    /* black holes & moons start with 0 particles — they accumulate one per match */
   }
   paint(){
     const col = this.type>=0 ? TYPES[this.type].color : '#ffffff';
@@ -1505,12 +1496,13 @@ const Special = {
       const total=cl.cellSet.size;
       const [fr,fc]=cl.runs[0].cells[0];
       const clType = g[fr][fc] ? g[fr][fc].type : -2;
-      if(clType===7) continue;                        /* moons match clean — never a power */
       let kind=null;
       if(clType===8){                                 /* meteors: 5+ cluster → blast the surroundings */
         kind = total>=5 ? 'blast' : null;
-      }else if(clType===6){                           /* black holes */
-        kind = total>=6 ? 'vortex' : 'keep';          /* 6+ → singularity · 3-5 → one survives */
+      }else if(clType===6){                           /* black holes: match → one survives + 1 particle */
+        kind = 'keep';
+      }else if(clType===7){                           /* moons: match → one survives + 1 particle */
+        kind = 'keepMoon';
       }else{
         const maxLen=Math.max(...cl.runs.map(r=>r.len));
         if(total>=5) kind='bomb';
@@ -1610,6 +1602,38 @@ const Special = {
       orb.appendChild(d);
     }
     t.el.appendChild(orb);
+  },
+  /* add ONE orbiting particle to a black hole / moon — returns the new count */
+  addOrbit(t){
+    t.orb=(t.orb||0)+1;
+    let orb=t.el.querySelector('.orbit');
+    if(!orb){
+      orb=document.createElement('div');
+      orb.className='orbit orbit-gem'+(t.type===7?' rev':'');
+      t.el.appendChild(orb);
+    }
+    const d=document.createElement('i'); d.className='odot';
+    d.style.setProperty('--a',((t.orb-1)*90+(Math.random()*44-22))+'deg');
+    d.style.background=t.color;
+    d.style.boxShadow='0 0 9px '+t.color+', 0 0 2px #fff';
+    orb.appendChild(d);
+    gsap.fromTo(d,{scale:0},{scale:1,duration:.4,ease:'back.out(3)'});
+    return t.orb;
+  },
+  /* a moon that gathered 4 particles collapses into a black hole (0 particles) */
+  moonToHole(t){
+    t.type=6; t.special=null; t.orb=0;
+    const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
+    t.shape.className='shape s-hole t6';
+    t.paint();
+    gsap.fromTo(t.inner,{scale:.3,rotation:-200},{scale:1,rotation:0,duration:.55,ease:'back.out(1.8)'});
+    const [x,y]=center(t);
+    ring(x,y,'#b06bff',{from:.4,to:3.4,dur:.55});
+    ring(x,y,'#ffffff',{from:.3,to:2,dur:.45,delay:.07});
+    particles.implode(x,y,'#b06bff',16);
+    particles.burst(x,y,'#ffffff',10,1.2);
+    UI.floatText(x,y-CFG.cell*.8,'AGUJERO NEGRO',{color:'#c99aff',size:15,dur:1});
+    AudioFX.vortex();
   },
 };
 
@@ -1742,7 +1766,8 @@ class Game{
       if(Math.random()<.5){
         const t=sp[(Math.random()*sp.length)|0];
         const [x,y]=center(t), j=CFG.cell*.32;
-        const col=t.special==='bomb' ? TYPES[(Math.random()*TYPES.length)|0].color : t.color;
+        const col=t.special==='bomb' ? TYPES[(Math.random()*TYPES.length)|0].color
+                : t.type===8 ? '#ffb36b' : t.color;   /* gray rocks shed hot embers */
         particles.spark(x+(Math.random()*2-1)*j, y+(Math.random()*2-1)*j, col);
       }
     }
@@ -1832,7 +1857,7 @@ class Game{
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell/2;
     ring(W,H,'#00e5ff',{from:.5,to:6.2,dur:.7});
     particles.burst(W,H,'#00e5ff',14,1.3);
-    UI.floatText(W,H-CFG.cell*.4,'GO!',{color:'#00e5ff',size:30,dur:.9});
+    UI.floatText(W,H-CFG.cell*.4,'¡A JUGAR!',{color:'#00e5ff',size:26,dur:.9});
     this.setState(State.PLAYING);
   }
 
@@ -1852,7 +1877,7 @@ class Game{
     this.input.deselect();
     AudioFX.bomb(); this.shake(13); flashBoard();
     const W=COLS*CFG.cell, H=ROWS*CFG.cell;
-    UI.floatText(W/2,H/2,'CRUSH!',{color:'#ff2fd2',size:34,dur:1.1});
+    UI.floatText(W/2,H/2,'¡APLASTADO!',{color:'#ff2fd2',size:30,dur:1.1});
     const out=this.board.all();
     await Promise.all(out.map(t=>{
       const [x,y]=center(t), a=Math.random()*Math.PI*2, d=Math.max(W,H)*.42+Math.random()*W*.35;
@@ -1882,8 +1907,8 @@ class Game{
     this.meteorBusy=true;
     this.setState(State.RESOLVING);
     this.input.deselect();
-    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell*.18, 'METEOR STORM',
-      {color:'#ff9b3d',size:22,dur:1.1});
+    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell*.18, 'TORMENTA DE METEOROS',
+      {color:'#b3bac9',size:20,dur:1.1});
     const g=this.board.grid;
     const k=3+((Math.random()*3)|0);
     const cells=[];
@@ -1975,7 +2000,7 @@ class Game{
       if(bonus){
         Score.moves+=bonus;
         UI.renderMoves(true);
-        UI.floatText(cx,cy+CFG.cell*.95,'+'+bonus+' MOVES',{color:'#a3ff12',size:15,dur:1.15});
+        UI.floatText(cx,cy+CFG.cell*.95,'+'+bonus+' JUGADAS',{color:'#a3ff12',size:14,dur:1.15});
         AudioFX.bonus();
       }
 
@@ -1986,17 +2011,24 @@ class Game{
       });
       // forge fresh specials first so a chained blast can't silently eat the reward
       const protect=new Set();
+      const autoVortexes=[];
       if(plans.length){
         plans.forEach(p=>{
           if(p.kind==='blast') return;              /* blasts detonate instantly, no morph */
           const t=g[p.r][p.c]; if(!t) return;
           protect.add(t);
-          if(p.kind==='keep'){
-            /* 3-5 black holes matched: this one absorbs the rest and stays alive */
+          if(p.kind==='keep' || p.kind==='keepMoon'){
+            /* one survivor absorbs its matched kin and gains ONE orbiting particle */
+            const n=Special.addOrbit(t);
             const [x,y]=center(t);
-            gsap.fromTo(t.inner,{scale:1},{scale:1.34,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
-            particles.implode(x,y,t.color,12);
             ring(x,y,t.color,{from:.5,to:2.4,dur:.45});
+            particles.implode(x,y,t.color,12);
+            if(n>=4){
+              if(p.kind==='keepMoon') Special.moonToHole(t);   /* 4 particles → black hole */
+              else{ Special.morph(t,'vortex'); autoVortexes.push(t); }  /* 4 → singularity */
+            }else{
+              gsap.fromTo(t.inner,{scale:1},{scale:1.3,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
+            }
           }else Special.morph(t,p.kind);
         });
         AudioFX.special();
@@ -2012,18 +2044,23 @@ class Game{
               const v=g[r][c];
               if(v && !vSet.has(v) && !protect.has(v)){ vSet.add(v); victims.push(v); }
             }
-          UI.floatText((b.c+.5)*CFG.cell,(b.r+.5)*CFG.cell-CFG.cell,'METEOR BLAST',
-            {color:'#ff9b3d',size:20,dur:1.1});
+          UI.floatText((b.c+.5)*CFG.cell,(b.r+.5)*CFG.cell-CFG.cell,'EXPLOSIÓN METEORO',
+            {color:'#ffb36b',size:17,dur:1.1});
         });
         flashBoard(); this.shake(16); AudioFX.boom();
       }
       // any special swept into the match (or hit by the chain) detonates — nothing vanishes silently
       const chain=await this.detonateChain(victims, cx, cy, depth, protect, blastAt);
+      // a freshly-forged singularity immediately devours its surroundings
+      for(const av of autoVortexes){
+        const [ox,oy]=center(av);
+        await this.detonateChain([av], ox, oy, depth, protect);
+      }
       const extra=chain.length-victims.length;
       if(extra>0){
         const pts=extra*10*depth;
         Score.add(pts);
-        UI.floatText(cx,cy-CFG.cell*.9,'CHAIN +'+pts,{color:'#00e5ff',size:16,dur:.9});
+        UI.floatText(cx,cy-CFG.cell*.9,'CADENA +'+pts,{color:'#00e5ff',size:16,dur:.9});
       }
 
       await Gravity.apply(this.board);
@@ -2066,7 +2103,7 @@ class Game{
       ring(x,y,col,{to:7,dur:.6,delay:.06});
       ring(x,y,'#ffffff',{to:4.6,dur:.5,delay:.12});
       flashBoard();
-      UI.floatText(x,y-CFG.cell,'COLOR CRUSH',{color:'#ffffff',size:20,dur:1.1});
+      UI.floatText(x,y-CFG.cell,'ARRASE DE COLOR',{color:'#ffffff',size:17,dur:1.1});
       particles.burst(x,y,'#ffffff',24,2.3);
       particles.burst(x,y,col,16,1.7);
     }else if(s.special==='vortex'){
@@ -2074,7 +2111,7 @@ class Game{
       ring(x,y,'#b06bff',{to:6,dur:.55,delay:.05});
       ring(x,y,'#7f5bff',{to:3.6,dur:.45,delay:.1});
       flashBoard();
-      UI.floatText(x,y-CFG.cell,'SINGULARITY',{color:'#c99aff',size:20,dur:1.1});
+      UI.floatText(x,y-CFG.cell,'SINGULARIDAD',{color:'#c99aff',size:18,dur:1.1});
       particles.implode(x,y,'#b06bff',20);
       particles.burst(x,y,'#ffffff',18,2);
       AudioFX.vortex();
@@ -2148,8 +2185,8 @@ class Game{
   }
 
   async shuffle(){
-    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell/2, 'NO MOVES — RESHUFFLE',
-      {color:'#00e5ff',size:20,dur:1.5,vy:-30});
+    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell/2, 'SIN JUGADAS — MEZCLANDO',
+      {color:'#00e5ff',size:18,dur:1.5,vy:-30});
     await wait(420);
     const out=this.board.all();
     await Promise.all(out.map((t,i)=>
@@ -2220,7 +2257,7 @@ class Game{
          onComplete:()=>t.el.classList.remove('hint')});
     });
     UI.floatText((ax+bx)/2, Math.min(ay,by)-CFG.cell*.65,
-      'HINT \u00b7 \u22121 MOVE', {color:'#ff4d5e',size:15,dur:1.25});
+      'PISTA \u00b7 \u22121 JUGADA', {color:'#ff4d5e',size:15,dur:1.25});
     this.shake(5);
     await wait(650);
     this.hinting=false;

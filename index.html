@@ -187,7 +187,7 @@ button{ font:inherit; }
 .t3{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#ffe08f,#ffb300 48%,#a86a00); }
 .t4{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#ffa3ad,#ff4d5e 48%,#a1121f); }
 .t5{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#d2b0ff,#9d5cff 48%,#5a21b3); }
-/* black hole — dark core + spinning accretion disk (unlocks at 20K) */
+/* black hole — dark core + spinning accretion disk (unlocks at 10K) */
 .s-hole{ border-radius:50%;
   background:radial-gradient(circle at 50% 50%, #000 0 30%, #160a28 38%, #3a1a63 56%, rgba(58,26,99,0) 74%); }
 .s-hole::before{ content:''; position:absolute; inset:4%; border-radius:50%;
@@ -198,7 +198,7 @@ button{ font:inherit; }
 .s-hole::after{ content:''; position:absolute; inset:29%; border-radius:50%; background:#000;
   box-shadow:0 0 14px 4px rgba(176,107,255,.7), inset 0 0 9px rgba(176,107,255,.5); }
 @keyframes holeSpin{ to{ transform:rotate(360deg); } }
-/* moon — cratered golden satellite (unlocks at 50K) */
+/* moon — cratered golden satellite (unlocks at 20K) */
 .s-moon{ border-radius:50%;
   background:radial-gradient(circle at 34% 30%, #fffbe8 0 15%, #ffe9a8 42%, #eec25e 72%, #c9973a 100%);
   box-shadow:inset -6px -5px 0 rgba(140,90,20,.28); }
@@ -208,6 +208,19 @@ button{ font:inherit; }
              215% -45% 0 -1px rgba(150,100,25,.34); }
 .s-moon::after{ content:''; position:absolute; inset:0; border-radius:50%;
   background:radial-gradient(circle at 72% 22%, rgba(255,255,255,.9), transparent 32%); }
+/* meteor — burning rock, only matches in 5+ clusters (storms start at 30K) */
+.s-meteor{ clip-path:polygon(30% 3%, 64% 0%, 90% 18%, 100% 52%, 82% 86%, 48% 100%, 14% 84%, 0% 50%, 8% 18%);
+  background:radial-gradient(circle at 36% 30%, #ffe3b0 0 16%, #ff9b3d 40%, #e2551f 66%, #7c240e 100%); }
+.s-meteor::before{ content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 62% 62%, rgba(255,224,138,.95) 0 6%, transparent 13%),
+             radial-gradient(circle at 34% 68%, rgba(255,190,100,.9) 0 5%, transparent 11%),
+             radial-gradient(circle at 58% 28%, rgba(255,240,190,.9) 0 4%, transparent 9%); }
+.s-meteor::after{ content:''; position:absolute; inset:0;
+  box-shadow:inset 0 0 13px rgba(255,120,40,.85); animation:meteorGlow 1.5s ease-in-out infinite; }
+@keyframes meteorGlow{ 0%,100%{ opacity:.5; } 50%{ opacity:1; } }
+.streak{ position:absolute; top:0; width:6px; border-radius:3px; pointer-events:none; z-index:7;
+  background:linear-gradient(180deg, rgba(255,179,0,0), #ffb300 55%, #ffffff);
+  box-shadow:0 0 16px #ff9b3d; }
 /* specials */
 .shape.stripes-h::after,.shape.stripes-v::after{ content:''; position:absolute; inset:0; }
 .shape.stripes-h::after{ background:repeating-linear-gradient(0deg, rgba(255,255,255,.8) 0 3px, rgba(255,255,255,0) 3px 9px); }
@@ -285,7 +298,7 @@ button{ font:inherit; }
 .how li:nth-child(7)::before{ background:#ffe9a8; box-shadow:0 0 9px #ffe9a8; }
 .how b{ font-weight:700; letter-spacing:.06em; }
 .cy{ color:var(--cyan); } .mg{ color:var(--magenta); } .am{ color:var(--amber); } .lm{ color:var(--lime); } .cr{ color:var(--coral); }
-.vh{ color:#c99aff; } .mh{ color:#ffe9a8; }
+.vh{ color:#c99aff; } .mh{ color:#ffe9a8; } .mt{ color:#ff9b3d; }
 /* locked-gem badges in the legend (20K / 50K) */
 .legend i.lk em{ position:absolute; right:-8px; bottom:-9px; font-style:normal;
   font-family:'Orbitron',sans-serif; font-size:8px; font-weight:800; letter-spacing:.05em;
@@ -472,8 +485,9 @@ button{ font:inherit; }
         <i style="--c:#ffb300"><span class="shape s-diamond t3"></span></i>
         <i style="--c:#ff4d5e"><span class="shape s-hexagon t4"></span></i>
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
-        <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>20K</em></i>
-        <i class="lk" style="--c:#ffe9a8"><span class="shape s-moon t7"></span><em>50K</em></i>
+        <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>10K</em></i>
+        <i class="lk" style="--c:#ffe9a8"><span class="shape s-moon t7"></span><em>20K</em></i>
+        <i class="lk" style="--c:#ff9b3d"><span class="shape s-meteor t8"></span><em>30K</em></i>
       </div>
       <ul class="how">
         <li>Drag a gem — or tap two neighbours — to swap. Line up <b class="cy">3+</b> to crush.</li>
@@ -481,8 +495,9 @@ button{ font:inherit; }
         <li><b class="am">Double-click / double-tap</b> a power gem to detonate it.</li>
         <li><b class="lm">25 moves</b>. Matches of 4+ grant <b class="lm">+2 bonus moves</b>; cascades multiply score.</li>
         <li>Stall for <b class="cy">10s</b> and the grid bounces a combo for you — costing <b class="cr">−1 move</b>. Best score is kept in a browser cookie.</li>
-        <li>At <b class="vh">20K pts</b> BLACK HOLES join the grid: match 3 and <b class="vh">one survives</b>; combine <b class="vh">6</b> to forge a SINGULARITY that devours everything around it.</li>
-        <li>At <b class="mh">50K pts</b> MOONS appear: they match like regular gems but grant <b class="mh">no power</b>.</li>
+        <li>At <b class="vh">10K pts</b> BLACK HOLES join the grid: match 3 and <b class="vh">one survives</b>; combine <b class="vh">6</b> to forge a SINGULARITY that devours everything around it.</li>
+        <li>At <b class="mh">20K pts</b> MOONS appear: they match like regular gems but grant <b class="mh">no power</b>.</li>
+        <li>At <b class="mt">30K pts</b> METEOR STORMS begin: burning rocks crash onto the grid every 30s–2min. They only combine at <b class="mt">5+</b> — and their blast wipes out everything around.</li>
       </ul>
       <div class="top5-wrap">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
@@ -536,7 +551,7 @@ button{ font:inherit; }
 /* ─────────────────────────── GLOBAL ─────────────────────────── */
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
-const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:20000, moonAt:50000 };
+const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
   { color:'#00e5ff', shape:'circle'   },
@@ -545,8 +560,9 @@ const TYPES = [
   { color:'#ffb300', shape:'diamond'  },
   { color:'#ff4d5e', shape:'hexagon'  },
   { color:'#9d5cff', shape:'star'     },
-  { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 20K */
-  { color:'#ffe9a8', shape:'moon'     },  /* type 7 — unlocks at 50K */
+  { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 10K */
+  { color:'#ffe9a8', shape:'moon'     },  /* type 7 — unlocks at 20K */
+  { color:'#ff9b3d', shape:'meteor'   },  /* type 8 — 30K · only falls from the sky in storms */
 ];
 const RANKS = [[25000,'NEON LEGEND'],[16000,'OVERDRIVE'],[10000,'HIGH VOLTAGE'],[6000,'SURGE'],[3000,'SPARK'],[0,'STATIC']];
 /* gem pool grows with the score: 6 gems → +black hole at 20K → +moon at 50K */
@@ -759,6 +775,8 @@ const AudioFX = (() => {
     over(){ [520,392,330,262].forEach((f,i)=>tone(f,{dur:.24,type:'triangle',vol:.55,delay:i*.17})); },
     deal(){ tone(300,{dur:.1,type:'sine',vol:.3,slide:220}); },
     warn(){ tone(310,{dur:.13,type:'square',vol:.4,slide:-90}); tone(215,{dur:.17,type:'square',vol:.4,slide:-70,delay:.13}); },
+    boom(){ tone(66,{dur:.62,type:'sine',vol:.9,slide:-26}); tone(880,{dur:.42,type:'sawtooth',vol:.36,slide:-740,delay:.03}); tone(170,{dur:.34,type:'square',vol:.28,slide:-95,delay:.06}); },
+    thud(){ tone(150,{dur:.18,type:'sine',vol:.7,slide:-80}); tone(72,{dur:.22,type:'sine',vol:.6,slide:-30,delay:.02}); },
     vortex(){ tone(720,{dur:.62,type:'sawtooth',vol:.42,slide:-640}); tone(58,{dur:.72,type:'sine',vol:.8,delay:.05,slide:-24}); },
     unlock(){ [440,554,659,880].forEach((f,i)=>tone(f,{dur:.13,type:'triangle',vol:.5,delay:i*.07})); },
   };
@@ -1163,6 +1181,7 @@ const Score = {
     this.score+=n; UI.renderScore(this.score); UI.popScore();
     if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('BLACK HOLE UNLOCKED','#b06bff');
     if(prev<CFG.moonAt && this.score>=CFG.moonAt) UI.unlockFX('MOON UNLOCKED','#ffe9a8');
+    if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('METEOR STORM UNLOCKED','#ff9b3d');
   },
 };
 const Combo = {
@@ -1298,6 +1317,29 @@ const Anim = {
       });
     });
   },
+  /* meteor blast: every victim is blown outward from the impact zone and shattered */
+  blast(tiles,cx,cy){
+    return new Promise(res=>{
+      if(!tiles.length){ res(); return; }
+      ring(cx,cy,'#ffffff',{from:.6,to:9.5,dur:.6});
+      ring(cx,cy,'#ffb300',{from:.5,to:6.8,dur:.55,delay:.05});
+      ring(cx,cy,'#ff4d5e',{from:.4,to:4.6,dur:.5,delay:.1});
+      let done=0;
+      tiles.forEach((t,i)=>{
+        const [x,y]=center(t);
+        const dx=(x-cx)*.5, dy=(y-cy)*.5;
+        const d=Math.hypot(x-cx,y-cy);
+        const delay=Math.min(.24, d/(CFG.cell*16)) + (i%5)*.012;
+        gsap.timeline({delay})
+          .call(()=>{ if(particles){ particles.burst(x,y,t.color,6,1.05);
+            if(i%2===0) particles.burst(x,y,'#ffffff',4,.85); } })
+          .to(t.inner,{scale:1.5,duration:.1,ease:'power2.out'},0)
+          .to(t.el,{x:'+='+dx, y:'+='+dy, rotation:'+='+(Math.random()*340-170),
+            scale:.06, opacity:0, duration:.34, ease:'power2.in'},0)
+          .call(()=>{ t.el.remove(); if(++done===tiles.length) res(); });
+      });
+    });
+  },
 };
 
 /* ─────────────────────────── TILE ───────────────────────────── */
@@ -1374,7 +1416,7 @@ const Match = {
         if(!t || t.type<0){ c++; continue; }
         let l=1;
         while(c+l<COLS && g[r][c+l] && g[r][c+l].type===t.type) l++;
-        if(l>=3) runs.push({cells:Array.from({length:l},(_,i)=>[r,c+i]), dir:'H', len:l});
+        if(l>=3 && (t.type!==8 || l>=5)) runs.push({cells:Array.from({length:l},(_,i)=>[r,c+i]), dir:'H', len:l});
         c+=l;
       }
     }
@@ -1385,7 +1427,7 @@ const Match = {
         if(!t || t.type<0){ r++; continue; }
         let l=1;
         while(r+l<ROWS && g[r+l][c] && g[r+l][c].type===t.type) l++;
-        if(l>=3) runs.push({cells:Array.from({length:l},(_,i)=>[r+i,c]), dir:'V', len:l});
+        if(l>=3 && (t.type!==8 || l>=5)) runs.push({cells:Array.from({length:l},(_,i)=>[r+i,c]), dir:'V', len:l});
         r+=l;
       }
     }
@@ -1393,15 +1435,15 @@ const Match = {
   },
   point(g,r,c){
     const t=g[r][c]; if(!t || t.type<0) return false;
-    const T=t.type; let n;
-    n=1;
+    const T=t.type; const thr = T===8 ? 5 : 3;  /* meteors only count at 5+ */
+    let n=1;
     for(let i=c-1;i>=0 && g[r][i] && g[r][i].type===T;i--) n++;
     for(let i=c+1;i<COLS && g[r][i] && g[r][i].type===T;i++) n++;
-    if(n>=3) return true;
+    if(n>=thr) return true;
     n=1;
     for(let i=r-1;i>=0 && g[i][c] && g[i][c].type===T;i--) n++;
     for(let i=r+1;i<ROWS && g[i][c] && g[i][c].type===T;i++) n++;
-    return n>=3;
+    return n>=thr;
   },
   findMove(g){
     const dirs=[[0,1],[1,0]];
@@ -1457,7 +1499,9 @@ const Special = {
       const clType = g[fr][fc] ? g[fr][fc].type : -2;
       if(clType===7) continue;                        /* moons match clean — never a power */
       let kind=null;
-      if(clType===6){                                 /* black holes */
+      if(clType===8){                                 /* meteors: 5+ cluster → blast the surroundings */
+        kind = total>=5 ? 'blast' : null;
+      }else if(clType===6){                           /* black holes */
         kind = total>=6 ? 'vortex' : 'keep';          /* 6+ → singularity · 3-5 → one survives */
       }else{
         const maxLen=Math.max(...cl.runs.map(r=>r.len));
@@ -1684,7 +1728,7 @@ class Game{
   /* random ambient sparks leaking off special tiles (and occasional gem glints) */
   emitSparks(){
     if(!particles || this.hinting) return;
-    const sp=this.board.all().filter(t=>t.special);
+    const sp=this.board.all().filter(t=>t.special || t.type===8);
     const k=Math.min(sp.length,2);
     for(let i=0;i<k;i++){
       if(Math.random()<.5){
@@ -1772,7 +1816,7 @@ class Game{
     AudioFX.ensure();
     UI.hideOverlay();
     Score.reset(); Combo.reset();
-    this.playMs=0; UI.renderCrush(this);
+    this.playMs=0; this.nextMeteor=null; this.meteorBusy=false; UI.renderCrush(this);
     this.input.deselect();
     this.board.generate();
     AudioFX.deal();
@@ -1795,7 +1839,7 @@ class Game{
   /* CRUSH button: chaos-scramble the whole board (charges 60s of play time) */
   async crush(){
     if(this.state!==State.PLAYING || this.playMs<CFG.crushMs) return;
-    this.playMs=0; UI.renderCrush(this);
+    this.playMs=0; this.nextMeteor=null; UI.renderCrush(this);
     this.setState(State.RESOLVING);
     this.input.deselect();
     AudioFX.bomb(); this.shake(13); flashBoard();
@@ -1821,6 +1865,53 @@ class Game{
     particles.burst(W/2,H/2,'#ffffff',12,1.2);
     await wait(720);
     this.setState(State.PLAYING);
+  }
+
+  /* METEOR STORM (from 30K pts): burning rocks crash onto random cells,
+     every 30s–2min — they convert whatever they land on into meteors */
+  async dropMeteors(){
+    if(this.state!==State.PLAYING || this.meteorBusy) return;
+    this.meteorBusy=true;
+    this.setState(State.RESOLVING);
+    this.input.deselect();
+    UI.floatText(COLS*CFG.cell/2, ROWS*CFG.cell*.18, 'METEOR STORM',
+      {color:'#ff9b3d',size:22,dur:1.1});
+    const g=this.board.grid;
+    const k=3+((Math.random()*3)|0);
+    const cells=[];
+    while(cells.length<k){
+      const r=(Math.random()*ROWS)|0, c=(Math.random()*COLS)|0;
+      if(!cells.some(p=>p[0]===r&&p[1]===c)) cells.push([r,c]);
+    }
+    await Promise.all(cells.map(([r,c],i)=>{
+      const t=g[r][c]; if(!t) return;
+      t.type=8; t.special=null;
+      t.el.classList.remove('sp','sp-bomb','sp-line','hint');
+      const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
+      t.shape.className='shape s-meteor t8';
+      t.paint();
+      const fromY=-(r+3)*CFG.cell;
+      const dur=.44+i*.09;
+      const st=document.createElement('div'); st.className='streak';
+      st.style.left=(c*CFG.cell+CFG.cell/2-3)+'px';
+      st.style.height=CFG.cell*2.3+'px';
+      fxEl.appendChild(st);
+      gsap.fromTo(st,{y:fromY},{y:r*CFG.cell-CFG.cell*1.15,duration:dur,ease:'power2.in',
+        onComplete:()=>st.remove()});
+      return gsap.fromTo(t.el,{y:fromY},{y:r*CFG.cell,duration:dur,ease:'power2.in'})
+        .then(()=>{
+          const [ix,iy]=center(t);
+          ring(ix,iy,'#ff9b3d',{from:.4,to:2.7,dur:.42});
+          particles.burst(ix,iy,'#ff9b3d',11,1.15);
+          particles.burst(ix,iy,'#ffffff',5,.85);
+          AudioFX.thud(); this.shake(4);
+        });
+    }));
+    await wait(180);
+    const runs=Match.find(g);
+    if(runs.length) await this.resolve(runs,null);
+    await this.endTurn();
+    this.meteorBusy=false;
   }
 
   async trySwap(a,b){
@@ -1858,7 +1949,8 @@ class Game{
       const plans=Special.plan(g,runs,hint); hint=null;
       const cellSet=new Set();
       runs.forEach(run=>run.cells.forEach(([r,c])=>cellSet.add(r*COLS+c)));
-      const planSet=new Set(plans.map(p=>p.r*COLS+p.c));
+      const blastPlans=plans.filter(p=>p.kind==='blast');
+      const planSet=new Set(plans.filter(p=>p.kind!=='blast').map(p=>p.r*COLS+p.c));
       let cx=0, cy=0;
       cellSet.forEach(k=>{ cx+=(k%COLS+.5)*CFG.cell; cy+=(((k/COLS)|0)+.5)*CFG.cell; });
       cx/=cellSet.size; cy/=cellSet.size;
@@ -1888,6 +1980,7 @@ class Game{
       const protect=new Set();
       if(plans.length){
         plans.forEach(p=>{
+          if(p.kind==='blast') return;              /* blasts detonate instantly, no morph */
           const t=g[p.r][p.c]; if(!t) return;
           protect.add(t);
           if(p.kind==='keep'){
@@ -1900,8 +1993,24 @@ class Game{
         });
         AudioFX.special();
       }
+      // meteor 5+ cluster → everything in a 5×5 zone around each blast point is wiped
+      let blastAt=null;
+      if(blastPlans.length){
+        blastAt=[(blastPlans[0].c+.5)*CFG.cell,(blastPlans[0].r+.5)*CFG.cell];
+        const vSet=new Set(victims);
+        blastPlans.forEach(b=>{
+          for(let r=Math.max(0,b.r-2); r<=Math.min(ROWS-1,b.r+2); r++)
+            for(let c=Math.max(0,b.c-2); c<=Math.min(COLS-1,b.c+2); c++){
+              const v=g[r][c];
+              if(v && !vSet.has(v) && !protect.has(v)){ vSet.add(v); victims.push(v); }
+            }
+          UI.floatText((b.c+.5)*CFG.cell,(b.r+.5)*CFG.cell-CFG.cell,'METEOR BLAST',
+            {color:'#ff9b3d',size:20,dur:1.1});
+        });
+        flashBoard(); this.shake(16); AudioFX.boom();
+      }
       // any special swept into the match (or hit by the chain) detonates — nothing vanishes silently
-      const chain=await this.detonateChain(victims, cx, cy, depth, protect);
+      const chain=await this.detonateChain(victims, cx, cy, depth, protect, blastAt);
       const extra=chain.length-victims.length;
       if(extra>0){
         const pts=extra*10*depth;
@@ -1920,9 +2029,9 @@ class Game{
   specialTargets(t){
     const g=this.board.grid;
     if(t.special==='bomb'){
-      const counts=Array(8).fill(0);
+      const counts=Array(9).fill(0);
       this.board.all().forEach(x=>{ if(x.type>=0) counts[x.type]++; });
-      let col=0; for(let i=1;i<8;i++) if(counts[i]>counts[col]) col=i;
+      let col=0; for(let i=1;i<9;i++) if(counts[i]>counts[col]) col=i;
       t._bombColor=col;
       return this.board.all().filter(x=>x.type===col && x!==t);
     }
@@ -1971,7 +2080,7 @@ class Game{
     AudioFX.bomb();
   }
   /* chain reaction: every special hit by the blast also fires (BFS, loop-safe) */
-  async detonateChain(seeds, cx, cy, combo, protect){
+  async detonateChain(seeds, cx, cy, combo, protect, blastAt){
     const g=this.board.grid;
     protect = protect || new Set();
     const fired=new Set();
@@ -2000,6 +2109,8 @@ class Game{
     if(vortex){
       const [vx,vy]=center(vortex);
       await Anim.suck(victims,vx,vy);          /* everything spirals into the singularity */
+    }else if(blastAt){
+      await Anim.blast(victims,blastAt[0],blastAt[1]);  /* meteor blast: blown outward */
     }else{
       await Anim.destroy(victims,{cx,cy,wave:true,combo});
     }
@@ -2070,6 +2181,13 @@ class Game{
     if(this.state===State.PLAYING){
       this.playMs+=450;
       UI.renderCrush(this);
+      if(Score.score>=CFG.meteorAt && !this.meteorBusy && !this.hinting){
+        if(this.nextMeteor==null) this.nextMeteor=this.playMs+8000+Math.random()*12000;
+        else if(this.playMs>=this.nextMeteor){
+          this.nextMeteor=this.playMs+30000+Math.random()*90000;
+          this.dropMeteors();
+        }
+      }
     }
     if(this.state!==State.PLAYING || this.hinting) return;
     if(performance.now()-this.idleAt < CFG.idleMs) return;

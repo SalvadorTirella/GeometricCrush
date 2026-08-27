@@ -146,6 +146,9 @@ body.settings-open #settings{ color:var(--magenta); filter:drop-shadow(0 0 14px 
    ════════════════════════════════════════════════════════════ */
 #stage{ position:relative; z-index:2; flex:1; min-height:0; display:flex; align-items:center;
   justify-content:center; touch-action:none; padding:6px 12px 12px; }
+/* kills iOS double-tap zoom + 300ms tap delay everywhere interactive */
+html,body{ touch-action:manipulation; }
+button,.btn,#crush,.icon-btn,.tg,.seg-b,.preset{ touch-action:manipulation; }
 #shell{ position:relative; padding:2px;
   background:linear-gradient(155deg, rgba(0,229,255,.85), rgba(157,92,255,.5) 45%, rgba(255,47,210,.75) 90%);
   clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
@@ -610,10 +613,10 @@ body.q-noglow .tag{ text-shadow:none; }
       <ul class="how">
         <li>Arrastra una gema —o toca dos vecinas— para intercambiarlas. Alinea <b class="cy">3+</b> para aplastar.</li>
         <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR. Si una BOMBA LINEAL activa a otra en cadena, el haz gana <b class="mg">+2 líneas</b> por bomba extra (3, 5, 7…).</li>
-        <li><b class="am">Doble clic / doble toque</b> sobre una gema de poder para detonarla.</li>
+        <li><b class="am">Un solo toque</b> sobre una gema de poder y detona al instante (arrástrala si querés intercambiarla).</li>
         <li><b class="lm">25 jugadas</b>. Los matches de 4+ dan <b class="lm">+2 jugadas extra</b>; las cascadas multiplican los puntos.</li>
         <li>Si te quedas <b class="cy">10s</b> sin jugar, el tablero rebota un combo por ti — a cambio de <b class="cr">−1 jugada</b>. Tu mejor puntaje se guarda en una cookie.</li>
-        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">doble toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
+        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">un toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
         <li>A los <b class="mh">20K pts</b> llegan las LUNAS: al juntar <b class="mh">3</b>, una sobrevive y absorbe las partículas del grupo (+1). Con <b class="mh">4 partículas</b> colapsa en un AGUJERO NEGRO.</li>
         <li>A los <b class="mt">30K pts</b> comienzan las TORMENTAS DE METEORITOS: rocas grises caen al tablero cada 30s–2min. Solo se combinan de a <b class="mt">5+</b> — y su explosión arrasa todo lo que hay alrededor.</li>
       </ul>
@@ -709,7 +712,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.2.0';  // acumulación de partículas + bombas lineales encadenadas
+const APP_VERSION = 'v1.2.1';  // poderes con un solo toque (sin doble-tap-zoom en iOS)
 const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -1992,11 +1995,10 @@ class InputCtl{
     if(p && p.t && !p.moved) this.tap(p.t);
   }
   tap(t){
+    /* one tap on a power gem detonates it right away (iOS-friendly, no double-tap zoom);
+       power gems are still swappable by dragging them onto a neighbour */
+    if(t.special){ this.last=null; this.deselect(); this.game.activateSpecial(t); return; }
     const now=performance.now();
-    if(this.last && this.last.t===t && now-this.last.time<CFG.tapWindow){
-      this.last=null;
-      if(t.special){ this.deselect(); this.game.activateSpecial(t); return; }
-    }
     this.last={t,time:now};
     if(this.selected===t){ this.deselect(); return; }
     if(this.selected && adjacent(this.selected,t)){
@@ -2360,7 +2362,7 @@ class Game{
               const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
               Special.morph(t,'vortex');              /* massive black hole → clickable singularity */
               UI.floatText(x,y-CFG.cell*.9,'AGUJERO MASIVO',{color:'#c99aff',size:15,dur:1.1});
-              UI.floatText(x,y-CFG.cell*.15,'DOBLE TOQUE',{color:'#ffffff',size:10,dur:1.1});
+              UI.floatText(x,y-CFG.cell*.15,'TOCALO PARA ABSORBER',{color:'#ffffff',size:10,dur:1.1});
             }else{
               gsap.fromTo(t.inner,{scale:1},{scale:1.3,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
             }

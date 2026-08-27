@@ -6,7 +6,7 @@ Incluye Top 5 con nombre de hasta 10 caracteres, modo LOCAL / JSON en la nube / 
 ### Mecánicas especiales
 - **Agujeros negros** (desde 10K): al juntar 3, el sobreviviente **absorbe las partículas de
   todos** los fusionados (+1 por la unión). Con **3 partículas** se vuelve un **AGUJERO MASIVO**:
-  doble toque y forma una **SINGULARIDAD** que absorbe todo a su alrededor.
+  un solo toque y forma una **SINGULARIDAD** que absorbe todo a su alrededor.
 - **Lunas** (desde 20K): también acumulan partículas al fusionarse; con **4** colapsan en un
   agujero negro.
 - **Bombas lineales encadenadas**: si una bomba lineal activa a otra en cadena, el haz se
@@ -229,7 +229,7 @@ arrastrá la carpeta con `index.html` y te da un link público al instante.
 ## 🎮 Controles
 
 - Arrastrar / swipe o tocar dos gemas vecinas → intercambiar.
-- Doble clic / doble toque en un poder → detonarlo.
+- Un solo toque en un poder → detonarlo (arrástralo para intercambiarlo).
 - Línea de 4 → LINE BOMB · 5+ gemas (línea, L o T) → COLOR BOMB.
 - Match de 4+ → **+2 jugadas** · 10s sin tocar → pista automática (−1 jugada).
 - Botón **CRUSH** (se carga cada 60s de juego) → desordena todo el tablero.

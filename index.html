@@ -505,6 +505,36 @@ body.q-noshapes .s-hole::before,
 body.q-noshapes .s-meteor::after,
 body.q-noshapes .orbit,
 body.q-noshapes .streak{ animation-play-state:paused !important; }
+
+/* ── 'glow' off — the biggest FPS win on iOS Safari: kill animated
+   drop-shadow / backdrop-blur / hue-rotate filters entirely ────── */
+body.q-noglow .chip{ filter:none !important; animation:none !important; }
+body.q-noglow #shell{ animation:none !important; filter:none !important; }
+body.q-noglow #board::before{ display:none; }          /* sweeping light layer */
+body.q-noglow .bg-glow, body.q-noglow .dust, body.q-noglow #scan{ display:none; }
+body.q-noglow .logo{ text-shadow:0 0 8px rgba(0,229,255,.5); animation:none; }
+body.q-noglow .panel, body.q-noglow #settings-panel{ backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none; }
+body.q-noglow .panel-title{ animation:none; text-shadow:0 0 12px rgba(0,229,255,.45); }
+body.q-noglow .tile.sp .shape, body.q-noglow .shape.vortex,
+body.q-noglow .s-hole, body.q-noglow .s-meteor{ animation:none !important; filter:none !important; }
+body.q-noglow #crush{ box-shadow:none; }
+body.q-noglow .tag{ text-shadow:none; }
+
+/* auto-detect + segmented density + version, in the settings drawer */
+.sp-auto{ display:flex; align-items:center; gap:10px; margin:10px 0 2px; }
+.btn.auto{ flex:none; font-size:11px; letter-spacing:.1em; padding:7px 12px 8px; }
+.sp-auto-res{ font-size:11px; font-weight:600; letter-spacing:.04em; color:var(--dim); line-height:1.45; }
+.sp-auto-res.ok{ color:var(--lime); }
+.seg{ display:flex; flex:none; box-shadow:inset 0 0 0 1px var(--line); background:#0a0f26;
+  clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+.seg-b{ border:none; cursor:pointer; background:transparent; color:var(--dim);
+  font-family:'Orbitron',sans-serif; font-weight:700; font-size:10px; letter-spacing:.06em;
+  padding:7px 9px; transition:.18s; }
+.seg-b+.seg-b{ border-left:1px solid var(--line); }
+.seg-b:hover{ color:var(--cyan); }
+.seg-b.on{ color:#12030f; background:linear-gradient(180deg,#c4ff7e,#a3ff12 55%,#5f9e06);
+  box-shadow:0 0 12px rgba(163,255,18,.45); }
+.sp-ver{ color:var(--cyan); letter-spacing:.18em; font-weight:800; }
 </style>
 </head>
 
@@ -640,6 +670,10 @@ body.q-noshapes .streak{ animation-play-state:paused !important; }
     <button class="preset" data-p="media">MEDIA</button>
     <button class="preset" data-p="minima">MÍNIMA</button>
   </div>
+  <div class="sp-auto">
+    <button class="btn mini auto" id="autodetect">⚡ PROBAR MI DISPOSITIVO</button>
+    <span class="sp-auto-res" id="autodetect-res">Mide los FPS reales y aplica el preset ideal.</span>
+  </div>
   <div class="sp-list">
     <div class="qopt"><div class="qopt-t">Partículas de bloques<small>Explosiones, chispas y estelas al jugar</small></div><button class="tg" data-k="particles" aria-pressed="true"><i></i></button></div>
     <div class="qopt"><div class="qopt-t">Partículas de fondo<small>Polvo ambiental y meteoros del fondo</small></div><button class="tg" data-k="bg" aria-pressed="true"><i></i></button></div>
@@ -647,8 +681,16 @@ body.q-noshapes .streak{ animation-play-state:paused !important; }
     <div class="qopt"><div class="qopt-t">Animación de formas<small>Discos, vórtices, bandas y órbitas</small></div><button class="tg" data-k="shapes" aria-pressed="true"><i></i></button></div>
     <div class="qopt"><div class="qopt-t">Vibración de pantalla<small>Sacudidas en matches y explosiones</small></div><button class="tg" data-k="shake" aria-pressed="true"><i></i></button></div>
     <div class="qopt"><div class="qopt-t">Destellos de luz<small>Flashes blancos en combos y poderes</small></div><button class="tg" data-k="flash" aria-pressed="true"><i></i></button></div>
+    <div class="qopt"><div class="qopt-t">Brillos y neón<small>El ajuste que más FPS recupera en iPhone / Safari</small></div><button class="tg" data-k="glow" aria-pressed="true"><i></i></button></div>
+    <div class="qopt"><div class="qopt-t">Densidad de partículas<small>Cantidad de chispas, explosiones y polvo</small></div>
+      <div class="seg" id="density-seg">
+        <button class="seg-b" data-d="baja">BAJA</button>
+        <button class="seg-b" data-d="media">MEDIA</button>
+        <button class="seg-b" data-d="alta">ALTA</button>
+      </div>
+    </div>
   </div>
-  <div class="sp-foot">Los ajustes se guardan en este dispositivo y se aplican al instante.<br>El sonido se controla con el parlante de arriba.</div>
+  <div class="sp-foot">Los ajustes se guardan en este dispositivo y se aplican al instante.<br>El sonido se controla con el parlante de arriba.<br><b class="sp-ver" id="sp-ver"></b></div>
 </aside>
 
 <div id="scan" aria-hidden="true"></div>
@@ -666,6 +708,8 @@ body.q-noshapes .streak{ animation-play-state:paused !important; }
 /* ─────────────────────────── GLOBAL ─────────────────────────── */
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
+/* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
+const APP_VERSION = 'v1.1.0';
 const CFG = { cell:64, startMoves:25, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, moonAt:20000, meteorAt:30000 };
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
@@ -850,31 +894,82 @@ window.NC_LB_TEST = async function(){
   }catch(e){ log('\u2718 PUT falló ('+e.message+')'); }
 };
 
-/* graphic quality — persisted per device, applied live */
+/* graphic quality — persisted per device, applied live.
+   'glow' is the big one on iOS Safari: it strips animated drop-shadow /
+   backdrop-blur / hue-rotate filters, which are the main frame-killers. */
 const Quality = {
-  defs:{ particles:true, bg:true, breath:true, shapes:true, shake:true, flash:true },
+  defs:{ particles:true, bg:true, breath:true, shapes:true, shake:true, flash:true, glow:true, density:'alta' },
   presets:{
-    alta:  { particles:true,  bg:true,  breath:true,  shapes:true,  shake:true,  flash:true  },
-    media: { particles:true,  bg:true,  breath:false, shapes:true,  shake:true,  flash:false },
-    minima:{ particles:false, bg:false, breath:false, shapes:false, shake:false, flash:false }
+    alta:  { particles:true,  bg:true,  breath:true,  shapes:true,  shake:true,  flash:true,  glow:true,  density:'alta'  },
+    media: { particles:true,  bg:true,  breath:false, shapes:true,  shake:true,  flash:false, glow:false, density:'media' },
+    minima:{ particles:false, bg:false, breath:false, shapes:false, shake:false, flash:false, glow:false, density:'baja'  }
   },
+  densityMul:{ alta:1, media:.6, baja:.3 },
   s:null,
+  pmul(){ return this.densityMul[this.s.density] ?? 1; },
   load(){
     let saved={};
     try{ saved=JSON.parse(localStorage.getItem('nc-gfx')||'{}'); }catch(e){}
     this.s={ ...this.defs, ...saved };
+    /* first visit → pick a preset from the device's capabilities */
+    if(!localStorage.getItem('nc-gfx-init')){
+      this.preset(this.guessTier(), true);
+      try{ localStorage.setItem('nc-gfx-init','1'); }catch(e){}
+    }
     this.apply();
   },
+  /* rough heuristic so weak phones start on a playable preset */
+  guessTier(){
+    const ua=navigator.userAgent||'';
+    const ios=/iphone|ipad|ipod/i.test(ua);
+    const mem=navigator.deviceMemory||4;
+    const cores=navigator.hardwareConcurrency||4;
+    if(mem<=2 || cores<=2) return 'minima';
+    if(ios) return 'media';                 /* Safari composites filters very slowly */
+    if(mem<=4 || cores<=4) return 'media';
+    return 'alta';
+  },
   save(){ try{ localStorage.setItem('nc-gfx', JSON.stringify(this.s)); }catch(e){} },
-  set(k,v){ this.s[k]=!!v; this.save(); this.apply(); },
-  preset(name){
+  set(k,v){ this.s[k]=v; this.save(); this.apply(); },
+  preset(name, silent){
     const p=this.presets[name]; if(!p) return;
     this.s={...p}; this.save(); this.apply();
+    if(!silent && UI.syncQuality) UI.syncQuality();
   },
   apply(){
     const b=document.body;
     b.classList.toggle('q-nobreath', !this.s.breath);
     b.classList.toggle('q-noshapes', !this.s.shapes);
+    b.classList.toggle('q-noglow',   !this.s.glow);
+    if(window._ambientFx) window._ambientFx.recount();
+  },
+  /* real on-device benchmark: hammers the compositor ~0.6s and measures FPS */
+  benchmark(cb){
+    const host=document.createElement('div');
+    host.style.cssText='position:fixed;left:-9999px;top:0;width:240px;height:240px;pointer-events:none;z-index:-1;';
+    const kids=[];
+    for(let i=0;i<40;i++){
+      const d=document.createElement('div');
+      d.style.cssText='position:absolute;width:46px;height:46px;border-radius:50%;'
+        +'background:radial-gradient(circle,#0ff,#f0f);filter:blur(2px) drop-shadow(0 0 8px #0ff);'
+        +'left:'+((i%8)*28)+'px;top:'+(((i/8)|0)*28)+'px;';
+      host.appendChild(d); kids.push(d);
+    }
+    document.body.appendChild(host);
+    let frames=0; const t0=performance.now();
+    const tick=()=>{
+      frames++;
+      const t=(performance.now()-t0)/1000;
+      for(let i=0;i<kids.length;i++)
+        kids[i].style.transform='translate('+(Math.sin(t*6+i)*30)+'px,'+(Math.cos(t*5+i)*30)+'px) scale('+(1+Math.sin(t*7+i)*.4)+')';
+      if(performance.now()-t0<600) requestAnimationFrame(tick);
+      else{
+        host.remove();
+        const fps=Math.round(frames/((performance.now()-t0)/1000));
+        cb(fps, fps>=52?'alta':fps>=38?'media':'minima');
+      }
+    };
+    requestAnimationFrame(tick);
   }
 };
 
@@ -937,7 +1032,8 @@ class ParticlePool{
   }
   burst(x,y,color,n,power){
     if(!Quality.s.particles) return;
-    n = REDUCED ? Math.ceil(n/2) : n;
+    n = Math.max(3, Math.ceil(n * Quality.pmul()));
+    if(REDUCED) n = Math.ceil(n/2);
     for(let i=0;i<n;i++){
       const el=this.free.pop(); if(!el) return;
       const s=3+Math.random()*5, a=Math.random()*Math.PI*2;
@@ -969,6 +1065,7 @@ class ParticlePool{
   }
   implode(x,y,color,n){
     if(!Quality.s.particles) return;
+    n = Math.max(2, Math.ceil(n * Quality.pmul()));
     for(let i=0;i<n;i++){
       const el=this.free.pop(); if(!el) return;
       const s=2.5+Math.random()*3.5, a=Math.random()*Math.PI*2, R=44+Math.random()*46;
@@ -982,6 +1079,7 @@ class ParticlePool{
   }
   confetti(cx,cy,n=44,power=1.7){
     if(!Quality.s.particles) return;
+    n = Math.max(8, Math.ceil(n * Quality.pmul()));
     const cols=['#00e5ff','#ff2fd2','#a3ff12','#ffb300','#ff4d5e','#9d5cff','#ffffff'];
     for(let i=0;i<n;i++){
       const el=this.free.pop(); if(!el) return;
@@ -1032,13 +1130,19 @@ class AmbientFX{
     return s;
   }
   resize(){
-    const dpr=Math.min(2,devicePixelRatio||1);
+    /* low density → render the field at 1x to save GPU fill-rate on weak phones */
+    const dpr = Quality.s.density==='baja' ? 1 : Math.min(2,devicePixelRatio||1);
     this.w=innerWidth; this.h=innerHeight;
     this.cv.width=Math.round(this.w*dpr); this.cv.height=Math.round(this.h*dpr);
     this.ctx.setTransform(dpr,0,0,dpr,0,0);
-    const count=Math.min(170,Math.round(this.w*this.h/9000));
-    this.ps=Array.from({length:count},()=>this.make(true));
+    this.recount();
     if(REDUCED) this.draw();
+  }
+  recount(){
+    const base=Math.min(170,Math.round(this.w*this.h/9000));
+    const count=Math.max(24, Math.round(base * Quality.pmul()));
+    if(!this.ps || this.ps.length!==count)
+      this.ps=Array.from({length:count},(_,i)=> this.ps&&this.ps[i] ? this.ps[i] : this.make(true));
   }
   make(anywhere){
     const z=.3+Math.random()*.7, up=Math.random()<.5;
@@ -1242,6 +1346,9 @@ const UI = {
       const p=Quality.presets[btn.dataset.p];
       const match=p && Object.keys(p).every(k=>Quality.s[k]===p[k]);
       btn.classList.toggle('on', !!match);
+    });
+    document.querySelectorAll('#density-seg .seg-b').forEach(btn=>{
+      btn.classList.toggle('on', Quality.s.density===btn.dataset.d);
     });
   },
   /* feedback when the offline queue finally reaches the global ranking */
@@ -1951,8 +2058,11 @@ class Game{
 
   boot(){
     UI.init();
-    particles=new ParticlePool(fxEl, 340);
-    new AmbientFX($('#ambient'));
+    const tag=$('.tag'); if(tag) tag.textContent='ARCADE MATCH-3 · '+APP_VERSION;
+    const ver=$('#sp-ver'); if(ver) ver.textContent='NEON CRUSH '+APP_VERSION;
+    Quality.load();                       /* pick a preset before any FX is allocated */
+    particles=new ParticlePool(fxEl, Math.max(120, Math.round(340*Quality.pmul())));
+    window._ambientFx=new AmbientFX($('#ambient'));
     UI.renderBest(+(Cookie.get('nc-best')||0));
     this.applyMuteUI();
     this.resize();
@@ -1983,7 +2093,7 @@ class Game{
     }, 20000);
     $('#mute').addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); });
     /* settings drawer */
-    Quality.load(); UI.syncQuality();
+    UI.syncQuality();
     const openSettings=()=>{
       document.body.classList.add('settings-open');
       this.settingsOpen=true;
@@ -2012,6 +2122,24 @@ class Game{
         Quality.preset(btn.dataset.p);
         UI.syncQuality();
         AudioFX.ensure(); tone(700,{dur:.09,type:'sine',vol:.32,slide:220});
+      });
+    });
+    document.querySelectorAll('#density-seg .seg-b').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        Quality.set('density', btn.dataset.d);
+        UI.syncQuality();
+        tone(560,{dur:.07,type:'sine',vol:.3,slide:120});
+      });
+    });
+    $('#autodetect').addEventListener('click', ()=>{
+      const res=$('#autodetect-res');
+      res.classList.remove('ok');
+      res.textContent='Probando tu GPU… mantén la pestaña visible.';
+      Quality.benchmark((fps, tier)=>{
+        Quality.preset(tier);
+        res.classList.add('ok');
+        res.textContent='✓ '+fps+' FPS → preset '+tier.toUpperCase()+' aplicado.';
+        AudioFX.ensure(); tone(820,{dur:.12,type:'sine',vol:.32,slide:260});
       });
     });
     UI.showStart();

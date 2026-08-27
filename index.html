@@ -211,16 +211,41 @@ input, select, textarea{ font-size:16px; }
 .s-hole::after{ content:''; position:absolute; inset:29%; border-radius:50%; background:#000;
   box-shadow:0 0 14px 4px rgba(176,107,255,.7), inset 0 0 9px rgba(176,107,255,.5); }
 @keyframes holeSpin{ to{ transform:rotate(360deg); } }
-/* moon — cratered golden satellite (unlocks at 20K) */
-.s-moon{ border-radius:50%;
-  background:radial-gradient(circle at 34% 30%, #fffbe8 0 15%, #ffe9a8 42%, #eec25e 72%, #c9973a 100%);
-  box-shadow:inset -6px -5px 0 rgba(140,90,20,.28); }
-.s-moon::before{ content:''; position:absolute; width:18%; height:18%; left:26%; top:50%; border-radius:50%;
-  background:rgba(150,100,25,.38);
-  box-shadow:130% -150% 0 -2px rgba(150,100,25,.32), 55% 80% 0 -3px rgba(150,100,25,.3),
-             215% -45% 0 -1px rgba(150,100,25,.34); }
-.s-moon::after{ content:''; position:absolute; inset:0; border-radius:50%;
-  background:radial-gradient(circle at 72% 22%, rgba(255,255,255,.9), transparent 32%); }
+/* sun — golden star with rotating rays (unlocks at 20K · 3 suns collapse into a black hole) */
+.s-sun{ border-radius:50%;
+  background:radial-gradient(circle at 36% 30%, #fffde8 0 18%, #ffd94a 45%, #ffb300 75%, #e08900 100%); }
+.s-sun::before{ content:''; position:absolute; inset:-26%; border-radius:50%;
+  background:conic-gradient(from 0deg,
+    transparent 0 10deg, #ffd94a 10deg 16deg, transparent 16deg 40deg,
+    #ffb300 40deg 46deg, transparent 46deg 70deg, #ffd94a 70deg 76deg, transparent 76deg 100deg,
+    #ffb300 100deg 106deg, transparent 106deg 130deg, #ffd94a 130deg 136deg, transparent 136deg 160deg,
+    #ffb300 160deg 166deg, transparent 166deg 190deg, #ffd94a 190deg 196deg, transparent 196deg 220deg,
+    #ffb300 220deg 226deg, transparent 226deg 250deg, #ffd94a 250deg 256deg, transparent 256deg 280deg,
+    #ffb300 280deg 286deg, transparent 286deg 310deg, #ffd94a 310deg 316deg, transparent 316deg 340deg,
+    #ffb300 340deg 346deg, transparent 346deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 54%, #000 56%);
+          mask:radial-gradient(circle, transparent 54%, #000 56%);
+  animation:holeSpin 5s linear infinite; }
+.s-sun::after{ content:''; position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.95), transparent 34%); }
+/* unstable sun (hard mode) — red alarm halo + shrinking fuse ring */
+.tile.unstable .shape.s-sun::after{ background:radial-gradient(circle at 50% 50%, rgba(255,60,60,.55), transparent 60%); }
+.tile.unstable::after{ content:''; position:absolute; inset:-6%; border-radius:14px; pointer-events:none;
+  border:2px solid #ff4d5e; box-shadow:0 0 16px #ff4d5e, inset 0 0 12px rgba(255,77,94,.4);
+  animation:unstablePulse .5s ease-in-out infinite; }
+@keyframes unstablePulse{ 0%,100%{ opacity:.55; transform:scale(1); } 50%{ opacity:1; transform:scale(1.06); } }
+/* void block — disabled cell that blocks matches and swaps */
+.tile.void .inner{ animation:none; }
+.tile.void .shape{ filter:grayscale(1) brightness(.28) !important; opacity:.85; }
+.tile.void .shape::before, .tile.void .shape::after{ display:none; }
+.tile.void .orbit{ display:none; }
+.tile.void::after{ content:''; position:absolute; inset:12%; pointer-events:none; border-radius:8px;
+  background:
+    linear-gradient(45deg, transparent 46%, rgba(120,140,190,.85) 46% 54%, transparent 54%),
+    linear-gradient(-45deg, transparent 46%, rgba(120,140,190,.85) 46% 54%, transparent 54%);
+  box-shadow:inset 0 0 0 1px rgba(120,140,190,.5);
+  animation:voidFlicker 1.4s steps(2) infinite; }
+@keyframes voidFlicker{ 0%,100%{ opacity:.85; } 50%{ opacity:.5; } }
 /* meteor — burning rock, only matches in 5+ clusters (storms start at 30K) */
 .s-meteor{ clip-path:polygon(30% 3%, 64% 0%, 90% 18%, 100% 52%, 82% 86%, 48% 100%, 14% 84%, 0% 50%, 8% 18%);
   background:radial-gradient(circle at 34% 30%, #e8ecf2 0 12%, #b3bac9 34%, #8a93a5 62%, #5c6474 100%); }
@@ -510,9 +535,13 @@ body.q-nobreath .shape{ animation-play-state:paused; }
 body.q-noshapes .tile.sp .shape,
 body.q-noshapes .shape.vortex,
 body.q-noshapes .s-hole::before,
+body.q-noshapes .s-sun::before,
 body.q-noshapes .s-meteor::after,
 body.q-noshapes .orbit,
-body.q-noshapes .streak{ animation-play-state:paused !important; }
+body.q-noshapes .streak,
+body.q-noshapes .vis-sun::before,
+body.q-noshapes .vis-hole::before,
+body.q-noshapes .body-vis{ animation-play-state:paused !important; }
 
 /* ── 'glow' off — the biggest FPS win on iOS Safari: kill animated
    drop-shadow / backdrop-blur / hue-rotate filters entirely ────── */
@@ -524,7 +553,10 @@ body.q-noglow .logo{ text-shadow:0 0 8px rgba(0,229,255,.5); animation:none; }
 body.q-noglow .panel, body.q-noglow #settings-panel{ backdrop-filter:none; -webkit-backdrop-filter:none; box-shadow:none; }
 body.q-noglow .panel-title{ animation:none; text-shadow:0 0 12px rgba(0,229,255,.45); }
 body.q-noglow .tile.sp .shape, body.q-noglow .shape.vortex,
-body.q-noglow .s-hole, body.q-noglow .s-meteor{ animation:none !important; filter:none !important; }
+body.q-noglow .s-hole, body.q-noglow .s-meteor, body.q-noglow .s-sun{ animation:none !important; filter:none !important; }
+body.q-noglow .cosmic-title{ animation:none; text-shadow:0 0 12px rgba(0,229,255,.45); }
+body.q-noglow .cosmic-card:hover{ box-shadow:inset 0 0 0 1px var(--line); }
+body.q-noglow .vis-planet, body.q-noglow .vis-sun, body.q-noglow .vis-hole{ box-shadow:none; }
 body.q-noglow #crush{ box-shadow:none; }
 body.q-noglow .tag{ text-shadow:none; }
 
@@ -543,6 +575,111 @@ body.q-noglow .tag{ text-shadow:none; }
 .seg-b.on{ color:#12030f; background:linear-gradient(180deg,#c4ff7e,#a3ff12 55%,#5f9e06);
   box-shadow:0 0 12px rgba(163,255,18,.45); }
 .sp-ver{ color:var(--cyan); letter-spacing:.18em; font-weight:800; }
+
+/* ════════════════════════════════════════════════════════════
+   COSMIC DIFFICULTY SELECTOR
+   ════════════════════════════════════════════════════════════ */
+#cosmic-overlay{ position:fixed; inset:0; z-index:60; display:flex; align-items:center; justify-content:center;
+  padding:16px; overflow-y:auto; background:rgba(2,3,10,.8);
+  backdrop-filter:blur(14px) saturate(1.15); -webkit-backdrop-filter:blur(14px) saturate(1.15); }
+.cosmic-panel{ position:relative; width:min(880px,96vw); padding:clamp(20px,3.5vw,34px) clamp(16px,3.5vw,40px) clamp(18px,3vw,28px);
+  background:linear-gradient(180deg, rgba(12,17,44,.9), rgba(6,9,26,.94));
+  border:1px solid rgba(0,229,255,.28);
+  box-shadow:0 0 60px rgba(0,229,255,.12), inset 0 0 40px rgba(0,229,255,.05);
+  clip-path:polygon(30px 0,100% 0,100% calc(100% - 30px),calc(100% - 30px) 100%,0 100%,0 30px); }
+.cosmic-top{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding-bottom:14px; border-bottom:1px solid var(--line); }
+.cosmic-top .logo{ font-size:clamp(18px,3vw,24px); }
+.cosmic-icons{ display:flex; gap:10px; }
+.cosmic-sub{ margin-top:18px; text-align:center; font-size:clamp(9px,1.4vw,12px); letter-spacing:.55em;
+  color:var(--magenta); font-weight:700; text-transform:uppercase; text-indent:.55em; }
+.cosmic-title{ text-align:center; margin:6px 0 4px; font-family:'Orbitron',sans-serif; font-weight:900; font-style:italic;
+  font-size:clamp(28px,6vw,46px); line-height:1; letter-spacing:.03em; color:var(--cyan);
+  text-shadow:0 0 18px rgba(0,229,255,.7), 0 0 50px rgba(0,229,255,.28); animation:titleGlow 3.2s ease-in-out infinite; }
+.cosmic-title b{ color:var(--magenta); text-shadow:0 0 18px rgba(255,47,210,.75), 0 0 50px rgba(255,47,210,.3); }
+.cosmic-lead{ text-align:center; margin:8px auto 22px; max-width:560px; color:#aebadd;
+  font-size:clamp(12.5px,1.7vw,14.5px); font-weight:600; letter-spacing:.02em; line-height:1.5; }
+.cosmic-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(12px,2vw,20px); }
+.cosmic-card{ position:relative; display:flex; flex-direction:column; align-items:center; text-align:center;
+  padding:22px 16px 20px; cursor:pointer; border:none; overflow:hidden;
+  background:linear-gradient(180deg, rgba(16,22,54,.85), rgba(8,12,32,.75));
+  box-shadow:inset 0 0 0 1px var(--line);
+  clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);
+  transition:transform .22s cubic-bezier(.3,1.4,.4,1), box-shadow .22s ease; }
+.cosmic-card:hover, .cosmic-card:focus-visible{ transform:translateY(-7px) scale(1.025); }
+.cosmic-card:active{ transform:translateY(-2px) scale(.99); }
+.cosmic-card .mult{ position:absolute; top:12px; right:12px; font-family:'Orbitron',sans-serif; font-weight:800;
+  font-size:11px; letter-spacing:.06em; padding:4px 9px 3px; color:#12030f;
+  background:linear-gradient(180deg,#ffe9a8,#ffb300); box-shadow:0 0 14px rgba(255,179,0,.5);
+  clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px); }
+.cosmic-card .body-vis{ position:relative; width:clamp(78px,11vw,108px); height:clamp(78px,11vw,108px);
+  margin:6px 0 16px; animation:bodyFloat 4.6s ease-in-out infinite; }
+@keyframes bodyFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-9px); } }
+.cosmic-card:nth-child(2) .body-vis{ animation-delay:-1.5s; }
+.cosmic-card:nth-child(3) .body-vis{ animation-delay:-3s; }
+.cosmic-card .cname{ font-family:'Orbitron',sans-serif; font-weight:800; font-size:clamp(15px,2vw,19px);
+  letter-spacing:.14em; color:#eaf6ff; text-indent:.14em; }
+.cosmic-card .csub{ margin-top:3px; font-family:'Orbitron',sans-serif; font-weight:700; font-size:clamp(9px,1.3vw,11px);
+  letter-spacing:.42em; text-indent:.42em; }
+.cosmic-card .cdesc{ margin-top:11px; color:#aebadd; font-size:clamp(11.5px,1.5vw,13px); font-weight:600;
+  line-height:1.5; letter-spacing:.01em; min-height:56px; }
+.cosmic-card .cmods{ margin-top:12px; display:flex; flex-direction:column; gap:6px; width:100%; }
+.cosmic-card .cmods span{ font-size:clamp(10px,1.35vw,11.5px); font-weight:700; letter-spacing:.06em;
+  color:#c7d3f5; padding:5px 10px; background:rgba(10,14,36,.7); box-shadow:inset 0 0 0 1px var(--line);
+  clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px); }
+/* per-mode accent glow */
+.cosmic-card[data-diff="planet"]:hover{ box-shadow:inset 0 0 0 1px rgba(163,255,18,.6), 0 14px 44px rgba(163,255,18,.16); }
+.cosmic-card[data-diff="planet"] .csub{ color:var(--lime); text-shadow:0 0 12px rgba(163,255,18,.6); }
+.cosmic-card[data-diff="sun"]:hover{ box-shadow:inset 0 0 0 1px rgba(255,217,74,.6), 0 14px 44px rgba(255,217,74,.16); }
+.cosmic-card[data-diff="sun"] .csub{ color:#ffd94a; text-shadow:0 0 12px rgba(255,217,74,.6); }
+.cosmic-card[data-diff="hole"]:hover{ box-shadow:inset 0 0 0 1px rgba(176,107,255,.65), 0 14px 44px rgba(176,107,255,.2); }
+.cosmic-card[data-diff="hole"] .csub{ color:#c99aff; text-shadow:0 0 12px rgba(176,107,255,.65); }
+/* celestial bodies inside cards */
+.vis-planet, .vis-sun, .vis-hole{ position:absolute; inset:0; }
+.vis-planet{ border-radius:50%;
+  background:radial-gradient(circle at 34% 28%, #d8ffe0 0 12%, #7ee08a 34%, #2fae62 62%, #157a4a 100%);
+  box-shadow:inset -10px -8px 0 rgba(10,70,40,.3), 0 0 34px rgba(126,224,138,.35); }
+.vis-planet::before{ content:''; position:absolute; left:-24%; right:-24%; top:42%; height:22%;
+  border-radius:50%; border:3px solid rgba(190,255,205,.75); transform:rotate(-16deg);
+  box-shadow:0 0 14px rgba(190,255,205,.4); }
+.vis-planet::after{ content:''; position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle at 66% 20%, rgba(255,255,255,.85), transparent 30%); }
+.vis-sun{ border-radius:50%;
+  background:radial-gradient(circle at 36% 30%, #fffde8 0 18%, #ffd94a 45%, #ffb300 75%, #e08900 100%);
+  box-shadow:0 0 40px rgba(255,217,74,.5); }
+.vis-sun::before{ content:''; position:absolute; inset:-24%; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 12deg, #ffd94a 12deg 20deg, transparent 20deg 45deg,
+    #ffb300 45deg 53deg, transparent 53deg 78deg, #ffd94a 78deg 86deg, transparent 86deg 111deg,
+    #ffb300 111deg 119deg, transparent 119deg 144deg, #ffd94a 144deg 152deg, transparent 152deg 177deg,
+    #ffb300 177deg 185deg, transparent 185deg 210deg, #ffd94a 210deg 218deg, transparent 218deg 243deg,
+    #ffb300 243deg 251deg, transparent 251deg 276deg, #ffd94a 276deg 284deg, transparent 284deg 309deg,
+    #ffb300 309deg 317deg, transparent 317deg 342deg, #ffd94a 342deg 350deg, transparent 350deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%); mask:radial-gradient(circle, transparent 56%, #000 58%);
+  animation:holeSpin 6s linear infinite; }
+.vis-sun::after{ content:''; position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle at 68% 24%, rgba(255,255,255,.95), transparent 34%); }
+.vis-hole{ border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, #000 0 30%, #1a0b30 40%, #43206e 60%, rgba(67,32,110,0) 76%);
+  box-shadow:0 0 40px rgba(176,107,255,.4); }
+.vis-hole::before{ content:''; position:absolute; inset:-14%; border-radius:50%;
+  background:conic-gradient(from 0deg, transparent 0 6%, #b06bff 16%, #ff7ae0 27%, transparent 39% 55%, #7f5bff 66%, #c99aff 76%, transparent 87%);
+  -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%); mask:radial-gradient(circle, transparent 56%, #000 58%);
+  animation:holeSpin 3.4s linear infinite; }
+.vis-hole::after{ content:''; position:absolute; inset:26%; border-radius:50%; background:#000;
+  box-shadow:0 0 18px 5px rgba(176,107,255,.65), inset 0 0 10px rgba(176,107,255,.5); }
+.cosmic-note{ margin-top:20px; text-align:center; font-size:clamp(10.5px,1.5vw,12.5px); font-weight:600;
+  letter-spacing:.04em; line-height:1.55; color:var(--dim); }
+.cosmic-note b{ color:var(--amber); }
+.cosmic-back{ margin:16px auto 0; display:block; }
+@media (max-width:760px){
+  .cosmic-cards{ grid-template-columns:1fr; gap:14px; }
+  .cosmic-card{ flex-direction:row; text-align:left; gap:16px; padding:16px; align-items:center; }
+  .cosmic-card .body-vis{ margin:0; width:74px; height:74px; flex:none; }
+  .cosmic-card .ctext{ flex:1; min-width:0; }
+  .cosmic-card .cdesc{ min-height:0; margin-top:6px; }
+  .cosmic-card .cmods{ margin-top:8px; }
+  .cosmic-card .mult{ top:8px; right:8px; }
+}
 </style>
 </head>
 
@@ -570,13 +707,13 @@ body.q-noglow .tag{ text-shadow:none; }
       <button id="crush" disabled aria-label="Crush: mezclar el tablero">CRUSH<span class="sub" id="crush-t">60s</span><i class="cool" id="crush-cool"></i></button>
     </div>
     <div class="hud-icons">
-      <button id="settings" class="icon-btn" aria-label="Ajustes gráficos">
+      <button id="settings" class="icon-btn js-settings" aria-label="Ajustes gráficos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </button>
-      <button id="mute" class="icon-btn" aria-label="Activar o silenciar el sonido">
+      <button id="mute" class="icon-btn mute-btn js-mute" aria-label="Activar o silenciar el sonido">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/>
           <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
@@ -612,18 +749,18 @@ body.q-noglow .tag{ text-shadow:none; }
         <i style="--c:#ff4d5e"><span class="shape s-hexagon t4"></span></i>
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
         <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>10K</em></i>
-        <i class="lk" style="--c:#ffe9a8"><span class="shape s-moon t7"></span><em>20K</em></i>
-        <i class="lk" style="--c:#ff9b3d"><span class="shape s-meteor t8"></span><em>30K</em></i>
+        <i class="lk" style="--c:#ffd94a"><span class="shape s-sun t7"></span><em>20K</em></i>
+        <i class="lk" style="--c:#b3bac9"><span class="shape s-meteor t8"></span><em>30K</em></i>
       </div>
       <ul class="how">
         <li>Arrastra una gema —o toca dos vecinas— para intercambiarlas. Alinea <b class="cy">3+</b> para aplastar.</li>
         <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR. Si una BOMBA LINEAL activa a otra en cadena, el haz gana <b class="mg">+2 líneas</b> por bomba extra (3, 5, 7…).</li>
         <li><b class="am">Un solo toque</b> sobre una gema de poder y detona al instante (arrástrala si querés intercambiarla).</li>
-        <li><b class="lm">25 jugadas</b>. Los matches de 4+ dan <b class="lm">+2 jugadas extra</b>; las cascadas multiplican los puntos.</li>
-        <li>Si te quedas <b class="cy">10s</b> sin jugar, el tablero rebota un combo por ti — a cambio de <b class="cr">−1 jugada</b>. Tu mejor puntaje se guarda en una cookie.</li>
+        <li><b class="lm">Elige tu órbita</b>: cada dificultad da más o menos jugadas y movimientos extra; las cascadas multiplican los puntos.</li>
+        <li>Si te quedas sin jugar, el tablero rebota un combo por ti — a cambio de jugadas. Tu mejor puntaje se guarda en una cookie.</li>
         <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">un toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
-        <li>A los <b class="mh">20K pts</b> llegan las LUNAS: al juntar <b class="mh">3</b>, una sobrevive y absorbe las partículas del grupo (+1). Con <b class="mh">4 partículas</b> colapsa en un AGUJERO NEGRO.</li>
-        <li>A los <b class="mt">30K pts</b> comienzan las TORMENTAS DE METEORITOS: rocas grises caen al tablero cada 30s–2min. Solo se combinan de a <b class="mt">5+</b> — y su explosión arrasa todo lo que hay alrededor.</li>
+        <li>A los <b class="mh">20K pts</b> llegan los SOLES: al juntar <b class="mh">3</b> colapsan en un AGUJERO NEGRO.</li>
+        <li>A los <b class="mt">30K pts</b> (o desde el inicio en PLANETA) caen METEORITOS grises. Solo se combinan de a <b class="mt">5+</b> — y su explosión arrasa todo lo que hay alrededor.</li>
       </ul>
       <div class="top5-wrap">
         <div class="top5-hd"><span>TOP 5 // RANKING</span><span class="mode-tag local" id="top5-mode">LOCAL</span></div>
@@ -659,6 +796,82 @@ body.q-noglow .tag{ text-shadow:none; }
       </div>
       <button class="btn mag" id="again-btn">JUGAR DE NUEVO</button>
     </div>
+  </div>
+</div>
+
+<!-- COSMIC DIFFICULTY SELECTOR -->
+<div id="cosmic-overlay" class="off">
+  <div class="cosmic-panel">
+    <header class="cosmic-top">
+      <div class="logo">NEON<b>CRUSH</b></div>
+      <div class="cosmic-icons">
+        <button class="icon-btn js-settings" aria-label="Ajustes gráficos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button class="icon-btn mute-btn js-mute" aria-label="Activar o silenciar el sonido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/>
+            <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+            <path class="wave" d="M18.5 6a9 9 0 0 1 0 12"/>
+            <path class="slash" d="M4 4l16 16"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div class="cosmic-sub">// selector cósmico de dificultad //</div>
+    <h1 class="cosmic-title">ELIGE TU <b>ÓRBITA</b></h1>
+    <p class="cosmic-lead">Cada cuerpo celeste altera las leyes del tablero. A menor gravedad, menor recompensa:
+      el ranking pondera tu puntaje para que la competencia sea justa en cualquier órbita.</p>
+    <div class="cosmic-cards">
+      <button class="cosmic-card" data-diff="planet">
+        <span class="mult">×⅓ PTS</span>
+        <span class="body-vis"><span class="vis-planet"></span></span>
+        <span class="ctext">
+          <span class="cname">PLANETA</span>
+          <span class="csub">FÁCIL</span>
+          <span class="cdesc">Sin obstáculos de energía. Meteoritos frecuentes caen para romper celdas y limpiar el tablero por ti.</span>
+          <span class="cmods">
+            <span>⏱ Pista automática a los 12s</span>
+            <span>＋ Movimientos extra más generosos</span>
+            <span>☄ Meteoritos frecuentes desde el inicio</span>
+          </span>
+        </span>
+      </button>
+      <button class="cosmic-card" data-diff="sun">
+        <span class="mult">×⅔ PTS</span>
+        <span class="body-vis"><span class="vis-sun"></span></span>
+        <span class="ctext">
+          <span class="cname">SOL</span>
+          <span class="csub">INTERMEDIO</span>
+          <span class="cdesc">La experiencia estándar: meteoritos, agujeros negros y soles aparecen según tu puntaje. Bloques que se deshabilitan cada tanto.</span>
+          <span class="cmods">
+            <span>⏱ Pista automática a los 10s</span>
+            <span>⬚ Bloques deshabilitados cada 2–3 min</span>
+            <span>★ Mecánicas especiales por puntaje</span>
+          </span>
+        </span>
+      </button>
+      <button class="cosmic-card" data-diff="hole">
+        <span class="mult">×1 PTS</span>
+        <span class="body-vis"><span class="vis-hole"></span></span>
+        <span class="ctext">
+          <span class="cname">AGUJERO NEGRO</span>
+          <span class="csub">DIFÍCIL</span>
+          <span class="cdesc">Soles inestables absorben las casillas vecinas si no los combinas rápido. Punitivo, táctico y sin piedad.</span>
+          <span class="cmods">
+            <span>⏱ Pista a los 7s · penaliza −2 jugadas</span>
+            <span>☀ Soles inestables desde el inicio</span>
+            <span>⬚ Anomalías más frecuentes</span>
+          </span>
+        </span>
+      </button>
+    </div>
+    <div class="cosmic-note">El puntaje se multiplica por la dificultad para mantener el <b>ranking equitativo</b>:
+      más riesgo, más puntos. Tu mejor puntaje y el Top 5 usan el valor ponderado.</div>
+    <button class="btn cosmic-back" id="cosmic-cancel">VOLVER AL MENÚ</button>
   </div>
 </div>
 
@@ -718,7 +931,24 @@ const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
 const APP_VERSION = 'v1.3.1';  // poderes solo se activan al tocarlos o al ser destruidos + bombas lineales apiladas (1→3→5 líneas)
-const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000 };
+const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000, voidMs:18000 };
+
+/* ══ COSMIC DIFFICULTY — each body rewrites the rules of the board ══
+   mult scales every point earned so the ranking stays fair across orbits. */
+const DIFFS = {
+  planet: { key:'planet', label:'PLANETA', mult:1/3,
+    idleMs:12000, hintPenalty:1, startMoves:14, bonusMoves:3,
+    meteorEvery:[14000,32000], meteorFromStart:true,
+    anomalies:false, anomalyEvery:null, unstableSuns:false },
+  sun: { key:'sun', label:'SOL', mult:2/3,
+    idleMs:10000, hintPenalty:1, startMoves:10, bonusMoves:2,
+    meteorEvery:[30000,120000], meteorFromStart:false,
+    anomalies:true, anomalyEvery:[120000,180000], unstableSuns:false },
+  hole: { key:'hole', label:'AGUJERO NEGRO', mult:1,
+    idleMs:7000, hintPenalty:2, startMoves:8, bonusMoves:2,
+    meteorEvery:[30000,120000], meteorFromStart:false,
+    anomalies:true, anomalyEvery:[90000,150000], unstableSuns:true }
+};
 const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 const TYPES = [
   { color:'#00e5ff', shape:'circle'   },
@@ -1308,6 +1538,22 @@ const UI = {
     AudioFX.unlock();
   },
   hideOverlay(){ gsap.to(this.overlay,{autoAlpha:0,duration:.35,ease:'power2.inOut'}); },
+  /* cosmic difficulty selector */
+  showCosmic(){
+    const c=$('#cosmic-overlay');
+    gsap.to(this.overlay,{autoAlpha:0,duration:.25,ease:'power2.inOut'});
+    c.classList.remove('off');
+    gsap.fromTo(c,{autoAlpha:0},{autoAlpha:1,duration:.3,ease:'power2.out'});
+    gsap.fromTo('.cosmic-card',{y:34,autoAlpha:0},{y:0,autoAlpha:1,duration:.55,stagger:.1,ease:'back.out(1.4)',delay:.12,overwrite:true});
+    gsap.fromTo('.cosmic-title',{scale:.8,autoAlpha:0},{scale:1,autoAlpha:1,duration:.5,ease:'back.out(2)',overwrite:true});
+  },
+  hideCosmic(){
+    const c=$('#cosmic-overlay');
+    if(!c.classList.contains('off')){
+      gsap.set(c,{autoAlpha:1});
+      c.classList.add('off');
+    }
+  },
   setModeTag(el, noteEl){
     const off = LB.hasRemote() && !navigator.onLine;
     const pend = LB.pending();
@@ -1387,6 +1633,7 @@ const UI = {
     });
   },
   showStart(){
+    this.hideCosmic();
     this.overPanel.classList.add('off'); this.startPanel.classList.remove('off');
     this.setModeTag($('#top5-mode'), $('#top5-note1'));
       $('#top5-start').innerHTML='<li class="t5-loading">CARGANDO\u2026</li>';    LB.load().then(l=>this.renderTop5($('#top5-start'),l,null));
@@ -1451,13 +1698,13 @@ const UI = {
 
 /* ─────────────────────────── SCORE / COMBO ──────────────────── */
 const Score = {
-  score:0, moves:CFG.startMoves,
-  reset(){ this.score=0; this.moves=CFG.startMoves; UI.renderScoreInstant(0); UI.renderMoves(); },
+  score:0, moves:CFG.startMoves, mult:1, startMoves:CFG.startMoves,
+  reset(){ this.score=0; this.moves=this.startMoves; UI.renderScoreInstant(0); UI.renderMoves(); },
   add(n){
     const prev=this.score;
-    this.score+=n; UI.renderScore(this.score); UI.popScore();
+    this.score+=Math.round(n*this.mult); UI.renderScore(this.score); UI.popScore();
     if(prev<CFG.holeAt && this.score>=CFG.holeAt) UI.unlockFX('AGUJERO NEGRO DESBLOQUEADO','#b06bff');
-    if(prev<CFG.moonAt && this.score>=CFG.moonAt) UI.unlockFX('LUNA DESBLOQUEADA','#ffe9a8');
+    if(prev<CFG.sunAt && this.score>=CFG.sunAt) UI.unlockFX('SOL DESBLOQUEADO','#ffd94a');
     if(prev<CFG.meteorAt && this.score>=CFG.meteorAt) UI.unlockFX('TORMENTA DE METEOROS DESBLOQUEADA','#b3bac9','ROCAS ARDIENTES CAERÁN DEL CIELO');
   },
 };
@@ -1904,9 +2151,10 @@ const Special = {
     }
     return n;
   },
-  /* a moon that gathered 4 particles collapses into a black hole (0 particles) */
-  moonToHole(t){
+  /* 3 matched suns collapse into a black hole (0 particles) */
+  sunToHole(t){
     t.type=6; t.special=null; t.orb=0;
+    t.el.classList.remove('unstable');
     const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
     t.shape.className='shape s-hole t6';
     t.paint();
@@ -2003,6 +2251,7 @@ class InputCtl{
     if(p && p.t && !p.moved) this.tap(p.t);
   }
   tap(t){
+    if(t.void) return;   /* disabled cell: ignore taps */
     /* one tap on a power gem detonates it right away (iOS-friendly, no double-tap zoom);
        power gems are still swappable by dragging them onto a neighbour */
     if(t.special && t.el.isConnected && this.game.board.grid[t.r][t.c]===t){
@@ -2038,7 +2287,10 @@ class Game{
     this.board=new Board(boardEl);
     this.state=State.START;
     this.input=new InputCtl(this);
+    this.diff=DIFFS.sun;
     this.idleAt=0; this.hinting=false; this.playMs=0; this.settingsOpen=false;
+    this.nextMeteor=null; this.meteorBusy=false; this.nextVoid=null;
+    this.unstable=null; this.unstableUntil=0;
     setInterval(()=>this.tickIdle(), 450);
     setInterval(()=>this.emitSparks(), 140);
   }
@@ -2088,8 +2340,11 @@ class Game{
     /* Safari-only pinch gestures: block them so the board never zooms */
     ['gesturestart','gesturechange','gestureend'].forEach(ev=>
       document.addEventListener(ev, e=>e.preventDefault(), {passive:false}));
-    $('#play-btn').addEventListener('click', ()=>this.start());
-    $('#again-btn').addEventListener('click', ()=>this.start());
+    $('#play-btn').addEventListener('click', ()=>this.showCosmic());
+    $('#again-btn').addEventListener('click', ()=>this.showCosmic());
+    document.querySelectorAll('.cosmic-card').forEach(card=>
+      card.addEventListener('click', ()=>this.start(card.dataset.diff)));
+    $('#cosmic-cancel').addEventListener('click', ()=>UI.showStart());
     $('#crush').addEventListener('click', ()=>this.crush());
     UI.crushBtn=$('#crush'); UI.crushT=$('#crush-t'); UI.crushCool=$('#crush-cool');
     UI.renderCrush(this);
@@ -2108,7 +2363,8 @@ class Game{
     setInterval(()=>{
       if(LB.pending()) LB.flush().then(n=>{ if(n) UI.syncToast(n); });
     }, 20000);
-    $('#mute').addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); });
+    document.querySelectorAll('.js-mute').forEach(b=>
+      b.addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); }));
     /* settings drawer */
     UI.syncQuality();
     const openSettings=()=>{
@@ -2121,7 +2377,7 @@ class Game{
       this.settingsOpen=false;
       this.idleAt=performance.now();   /* no instant penalty right after closing */
     };
-    $('#settings').addEventListener('click', openSettings);
+    document.querySelectorAll('.js-settings').forEach(b=>b.addEventListener('click', openSettings));
     $('#settings-close').addEventListener('click', closeSettings);
     $('#settings-back').addEventListener('click', closeSettings);
     document.querySelectorAll('#settings-panel .tg').forEach(btn=>{
@@ -2161,7 +2417,7 @@ class Game{
     });
     UI.showStart();
   }
-  applyMuteUI(){ $('#mute').classList.toggle('muted', AudioFX.muted); }
+  applyMuteUI(){ document.querySelectorAll('.mute-btn').forEach(m=>m.classList.toggle('muted', AudioFX.muted)); }
 
   resize(){
     const st=$('#stage');
@@ -2184,22 +2440,37 @@ class Game{
     this.board.all().forEach(t=>{ t.fit(); if(safe) t.place(); });
   }
 
-  async start(){
+  async start(diffKey){
     if(this.state!==State.START && this.state!==State.GAME_OVER) return;
+    this.diff=DIFFS[diffKey]||DIFFS.sun;
     this.setState(State.RESOLVING); // lock input while the new session deals in
     AudioFX.ensure();
     UI.hideOverlay();
+    UI.hideCosmic();
+    Score.mult=this.diff.mult;
+    Score.startMoves=this.diff.startMoves;
     Score.reset(); Combo.reset();
-    this.playMs=0; this.nextMeteor=null; this.meteorBusy=false; UI.renderCrush(this);
+    this.playMs=0; this.nextMeteor=null; this.meteorBusy=false;
+    this.nextVoid=null; this.unstable=null; this.unstableUntil=0;
+    UI.renderCrush(this);
     this.input.deselect();
     this.board.generate();
     AudioFX.deal();
     await this.dealIn();
     const W=COLS*CFG.cell/2, H=ROWS*CFG.cell/2;
-    ring(W,H,'#00e5ff',{from:.5,to:6.2,dur:.7});
-    particles.burst(W,H,'#00e5ff',14,1.3);
-    UI.floatText(W,H-CFG.cell*.4,'¡A JUGAR!',{color:'#00e5ff',size:26,dur:.9});
+    const acc=this.diff.key==='hole'?'#b06bff':this.diff.key==='planet'?'#a3ff12':'#ffd94a';
+    ring(W,H,acc,{from:.5,to:6.2,dur:.7});
+    particles.burst(W,H,acc,16,1.3);
+    UI.floatText(W,H-CFG.cell*.4,'ÓRBITA '+this.diff.label,{color:acc,size:19,dur:1.1});
     this.setState(State.PLAYING);
+    if(this.diff.unstableSuns) gsap.delayedCall(2.5,()=>this.spawnUnstable());
+  }
+
+  /* show the cosmic difficulty selector instead of starting directly */
+  showCosmic(){
+    if(this.state!==State.START && this.state!==State.GAME_OVER) return;
+    AudioFX.ensure();
+    UI.showCosmic();
   }
 
   async dealIn(){
@@ -2290,6 +2561,7 @@ class Game{
 
   async trySwap(a,b){
     if(this.state!==State.PLAYING || a===b || !adjacent(a,b)) return;
+    if(a.void||b.void){ this.shake(3); return; }   /* disabled cells can't move */
     this.input.deselect();
     this.setState(State.SWAPPING);
     AudioFX.swap();
@@ -2337,7 +2609,7 @@ class Game{
       this.shake(Math.min(2.5+depth*2.4, 14));
 
       let bonus=0;
-      runs.forEach(run=>{ if(run.len>=4) bonus+=2; });
+      runs.forEach(run=>{ if(run.len>=4) bonus+=this.diff.bonusMoves; });
       if(bonus){
         Score.moves+=bonus;
         UI.renderMoves(true);
@@ -2369,8 +2641,8 @@ class Game{
             const [x,y]=center(t);
             ring(x,y,t.color,{from:.5,to:2.4,dur:.45});
             particles.implode(x,y,t.color,12);
-            if(p.kind==='keepMoon' && n>=4){
-              Special.moonToHole(t);                  /* moon with 4 particles → black hole */
+            if(p.kind==='keepMoon'){
+              Special.sunToHole(t);                   /* 3 matched suns collapse into a black hole */
             }else if(p.kind==='keep' && n>=3){
               const orb=t.el.querySelector('.orbit'); if(orb) orb.remove();
               Special.morph(t,'vortex');              /* massive black hole → clickable singularity */
@@ -2598,27 +2870,49 @@ class Game{
     gsap.delayedCall(isNew?1.05:.7,()=>UI.showGameOver(final,best,isNew,list));
   }
 
-  /* 10s stall guard: bounce the available combo, cost 1 move */
+  /* stall guard + periodic anomalies + unstable suns — all driven by the chosen orbit */
   async tickIdle(){
     if(this.state===State.PLAYING){
       this.playMs+=450;
       UI.renderCrush(this);
-      if(Score.score>=CFG.meteorAt && !this.meteorBusy && !this.hinting && !this.settingsOpen){
-        if(this.nextMeteor==null) this.nextMeteor=this.playMs+8000+Math.random()*12000;
+      const d=this.diff;
+      /* meteor storms: every orbit has them, easy rains them from the start */
+      const meteorsOn = d.meteorFromStart || Score.score>=CFG.meteorAt;
+      if(meteorsOn && !this.meteorBusy && !this.hinting && !this.settingsOpen){
+        const [lo,hi]=d.meteorEvery;
+        if(this.nextMeteor==null) this.nextMeteor=this.playMs+(d.meteorFromStart?6000:8000)+Math.random()*8000;
         else if(this.playMs>=this.nextMeteor){
-          this.nextMeteor=this.playMs+30000+Math.random()*90000;
+          this.nextMeteor=this.playMs+lo+Math.random()*(hi-lo);
           this.dropMeteors();
         }
       }
+      /* void-block anomalies: random cells get disabled for a while */
+      if(d.anomalies && !this.settingsOpen){
+        const [lo,hi]=d.anomalyEvery;
+        if(this.nextVoid==null) this.nextVoid=this.playMs+lo+Math.random()*(hi-lo);
+        else if(this.playMs>=this.nextVoid){
+          this.nextVoid=this.playMs+lo+Math.random()*(hi-lo);
+          this.spawnVoid();
+        }
+      }
+      /* unstable suns (hard): spawn one, and when its fuse runs out it absorbs */
+      if(d.unstableSuns && !this.settingsOpen){
+        const u=this.unstable;
+        /* if the unstable sun was matched/transformed, drop the reference */
+        if(u && (u.type!==7 || this.board.grid[u.r][u.c]!==u)) this.unstable=null;
+        if(!this.unstable) this.spawnUnstable();
+        else if(performance.now()>this.unstableUntil && !this.hinting) this.unstableAbsorb();
+      }
     }
     if(this.state!==State.PLAYING || this.hinting || this.settingsOpen) return;
-    if(performance.now()-this.idleAt < CFG.idleMs) return;
+    if(performance.now()-this.idleAt < this.diff.idleMs) return;
     const pair=Match.findMove(this.board.grid);
     this.idleAt=performance.now();
     if(!pair) return;
     this.hinting=true;
     this.input.deselect();
-    Score.moves=Math.max(0,Score.moves-1);
+    const pen=this.diff.hintPenalty;
+    Score.moves=Math.max(0,Score.moves-pen);
     UI.renderMoves(true);
     AudioFX.warn();
     const [a,b]=pair;
@@ -2628,17 +2922,93 @@ class Game{
       t.el.classList.add('hint');
       ring(x,y,t.color,{from:.5,to:2.4,dur:.7});
       ring(x,y,'#ffffff',{from:.4,to:1.7,dur:.55,delay:.12});
-      [0,.22,.44].forEach(d=>gsap.delayedCall(d,()=>particles.burst(x,y,t.color,6,.55)));
+      [0,.22,.44].forEach(d2=>gsap.delayedCall(d2,()=>particles.burst(x,y,t.color,6,.55)));
       gsap.fromTo(t.inner,{scale:1},
         {scale:1.28,duration:.3,yoyo:true,repeat:3,ease:'back.out(2.6)',
          onComplete:()=>t.el.classList.remove('hint')});
     });
     UI.floatText((ax+bx)/2, Math.min(ay,by)-CFG.cell*.65,
-      'PISTA \u00b7 \u22121 JUGADA', {color:'#ff4d5e',size:15,dur:1.25});
+      'PISTA \u00b7 \u2212'+pen+' JUGADA'+(pen>1?'S':''), {color:'#ff4d5e',size:15,dur:1.25});
     this.shake(5);
     await wait(650);
     this.hinting=false;
     if(Score.moves<=0) this.gameOver();
+  }
+
+  /* ANOMALY: disable 1-3 random normal cells for a while (they block matches & swaps) */
+  spawnVoid(){
+    const g=this.board.grid;
+    const pool=this.board.all().filter(t=>t.type>=0 && t.type<=5 && !t.special && !t.void);
+    if(!pool.length) return;
+    const n=this.diff.key==='hole' ? 2+((Math.random()*2)|0) : 1+((Math.random()*2)|0);
+    const picks=[];
+    while(picks.length<n && pool.length){
+      picks.push(pool.splice((Math.random()*pool.length)|0,1)[0]);
+    }
+    picks.forEach(t=>{
+      t.void=true; t._voidType=t.type; t.type=-2;
+      t.el.classList.add('void');
+      const [x,y]=center(t);
+      ring(x,y,'#7a8cbd',{from:.4,to:2.2,dur:.45});
+      particles.burst(x,y,'#7a8cbd',7,.8);
+    });
+    AudioFX.warn(); this.shake(4);
+    const W=COLS*CFG.cell/2;
+    UI.floatText(W, CFG.cell*.8, 'ANOMALÍA — BLOQUES DESHABILITADOS',{color:'#7a8cbd',size:13,dur:1.4});
+    /* restore after a while, if still on the board */
+    gsap.delayedCall(CFG.voidMs/1000, ()=>{
+      picks.forEach(t=>{
+        if(g[t.r][t.c]===t && t.void){
+          t.void=false; t.type=t._voidType;
+          t.el.classList.remove('void');
+          const [x,y]=center(t);
+          particles.burst(x,y,t.color,5,.6);
+        }
+      });
+    });
+  }
+
+  /* HARD MODE: mark a sun as unstable — if not matched in time it devours its neighbours */
+  spawnUnstable(){
+    const g=this.board.grid;
+    let cands=this.board.all().filter(t=>t.type===7 && !t.special && !t.void);
+    let t;
+    if(cands.length) t=cands[(Math.random()*cands.length)|0];
+    else{
+      const normals=this.board.all().filter(x=>x.type>=0&&x.type<=5&&!x.special&&!x.void);
+      if(!normals.length) return;
+      t=normals[(Math.random()*normals.length)|0];
+      t.type=7; t.shape.className='shape s-sun t7'; t.paint();
+    }
+    t.el.classList.add('unstable');
+    this.unstable=t;
+    this.unstableUntil=performance.now()+10000;
+    const [x,y]=center(t);
+    ring(x,y,'#ff4d5e',{from:.4,to:2.6,dur:.5});
+    UI.floatText(x,y-CFG.cell*.9,'SOL INESTABLE',{color:'#ff4d5e',size:13,dur:1.2});
+    AudioFX.warn();
+  }
+  async unstableAbsorb(){
+    const t=this.unstable; this.unstable=null;
+    const g=this.board.grid;
+    if(!t || this.state!==State.PLAYING || g[t.r][t.c]!==t) return;
+    t.el.classList.remove('unstable');
+    this.setState(State.RESOLVING);
+    const [cx,cy]=center(t);
+    UI.floatText(cx,cy,'¡ABSORCIÓN!',{color:'#ff4d5e',size:18,dur:1});
+    const victims=[t];
+    [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>{
+      const rr=t.r+dr, cc=t.c+dc;
+      if(rr>=0&&rr<ROWS&&cc>=0&&cc<COLS&&g[rr][cc]) victims.push(g[rr][cc]);
+    });
+    ring(cx,cy,'#ff4d5e',{from:.4,to:4.2,dur:.5});
+    particles.implode(cx,cy,'#ff4d5e',14);
+    this.shake(9); AudioFX.boom();
+    await Anim.destroy(victims,{cx,cy,wave:false,combo:1});
+    victims.forEach(v=>{ if(g[v.r][v.c]===v) g[v.r][v.c]=null; });
+    await Gravity.apply(this.board);
+    await this.resolve(Match.find(g), null);
+    await this.endTurn();
   }
 
   shake(power){

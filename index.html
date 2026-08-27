@@ -197,7 +197,7 @@ input, select, textarea{ font-size:16px; }
 .t0{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#8df7ff,#00e5ff 48%,#00709e); }
 .t1{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#ff9bea,#ff2fd2 48%,#9c0f84); }
 .t2{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#d9ff8f,#a3ff12 48%,#5d9c00); }
-.t3{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#ffe08f,#ffb300 48%,#a86a00); }
+.t3{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#fff6a8,#ffe14d 48%,#c79b06); }
 .t4{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#ffa3ad,#ff4d5e 48%,#a1121f); }
 .t5{ background:radial-gradient(circle at 32% 28%, rgba(255,255,255,.95), rgba(255,255,255,.16) 36%, transparent 62%), linear-gradient(160deg,#d2b0ff,#9d5cff 48%,#5a21b3); }
 /* black hole — dark core + spinning accretion disk (unlocks at 10K) */
@@ -439,10 +439,11 @@ input, select, textarea{ font-size:16px; }
   background:linear-gradient(115deg, transparent 43%, rgba(190,240,255,.08) 50%, transparent 57%);
   animation:sweep 6.5s linear infinite; }
 @keyframes sweep{ 0%{ transform:translateX(-58%); } 100%{ transform:translateX(58%); } }
+/* frame glow breathing — NO hue-rotate: gem colors must never drift */
 #shell{ animation:frameHue 10s ease-in-out infinite; }
 @keyframes frameHue{
-  0%,100%{ filter:drop-shadow(0 0 26px rgba(0,229,255,.16)) drop-shadow(0 0 60px rgba(255,47,210,.07)) hue-rotate(0deg); }
-  50%{ filter:drop-shadow(0 0 34px rgba(0,229,255,.3)) drop-shadow(0 0 74px rgba(255,47,210,.16)) hue-rotate(34deg); } }
+  0%,100%{ filter:drop-shadow(0 0 26px rgba(0,229,255,.16)) drop-shadow(0 0 60px rgba(255,47,210,.07)); }
+  50%{ filter:drop-shadow(0 0 34px rgba(0,229,255,.3)) drop-shadow(0 0 74px rgba(255,47,210,.16)); } }
 .logo{ animation:logoFlicker 7s linear infinite; }
 @keyframes logoFlicker{ 0%,86%,92%,100%{ opacity:1; } 88%{ opacity:.45; } 90%{ opacity:.8; } }
 .chip{ animation:chipGlow 3.6s ease-in-out infinite alternate; }
@@ -744,7 +745,7 @@ body.q-noglow .tag{ text-shadow:none; }
         <i style="--c:#00e5ff"><span class="shape s-circle t0"></span></i>
         <i style="--c:#ff2fd2"><span class="shape s-square t1"></span></i>
         <i style="--c:#a3ff12"><span class="shape s-triangle t2"></span></i>
-        <i style="--c:#ffb300"><span class="shape s-diamond t3"></span></i>
+        <i style="--c:#ffe14d"><span class="shape s-diamond t3"></span></i>
         <i style="--c:#ff4d5e"><span class="shape s-hexagon t4"></span></i>
         <i style="--c:#9d5cff"><span class="shape s-star t5"></span></i>
         <i class="lk" style="--c:#b06bff"><span class="shape s-hole t6"></span><em>10K</em></i>
@@ -929,7 +930,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.4.2';  // fragmentos de meteorito a casillas aleatorias dispersas + soles amarillo-rojizos (rombos sin cambios)
+const APP_VERSION = 'v1.4.3';  // rombos amarillo estable: se quitó el hue-rotate del marco, los colores ya no derivan
 const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000, voidMs:18000 };
 
 /* ══ COSMIC DIFFICULTY — each body rewrites the rules of the board ══
@@ -953,7 +954,7 @@ const TYPES = [
   { color:'#00e5ff', shape:'circle'   },
   { color:'#ff2fd2', shape:'square'   },
   { color:'#a3ff12', shape:'triangle' },
-  { color:'#ffb300', shape:'diamond'  },
+  { color:'#ffe14d', shape:'diamond'  },
   { color:'#ff4d5e', shape:'hexagon'  },
   { color:'#9d5cff', shape:'star'     },
   { color:'#b06bff', shape:'hole'     },  /* type 6 — unlocks at 10K */

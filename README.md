@@ -9,8 +9,11 @@ Incluye Top 5 con nombre de hasta 10 caracteres, modo LOCAL / JSON en la nube / 
   un solo toque y forma una **SINGULARIDAD** que absorbe todo a su alrededor.
 - **Lunas** (desde 20K): también acumulan partículas al fusionarse; con **4** colapsan en un
   agujero negro.
-- **Bombas lineales encadenadas**: si una bomba lineal activa a otra en cadena, el haz se
-  expande **+2 líneas por bomba extra** de la misma orientación (1 → 3 → 5 → 7…).
+- **Bombas lineales apiladas**: si una bomba lineal activa a otra de la misma orientación,
+  el poder se apila y barre **+2 líneas por bomba extra** (1 → 3 → 5 → 7…). El gráfico dibuja
+  un haz por cada línea barrida, ondulando desde el centro hacia los bordes.
+- **Regla de activación**: un poder SOLO se detona si lo tocas, o si el bloque que lo contiene
+  va a ser destruido (match, explosión, zona de meteorito, etc.). Nunca se activa solo.
 - **Meteoritos** (desde 30K): caen del cielo en tormentas, solo combinan de a 5+ y su explosión
   arrasa todo alrededor.
 

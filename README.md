@@ -28,17 +28,25 @@ Con LOCAL funciona igual, pero cada dispositivo ve su propio Top 5.
 
 ## 🅰️ Opción JSON — ranking mundial sin crear cuentas (2 minutos)
 
-1. Creá el "archivo" JSON. Con curl (Git Bash / Terminal / PowerShell):
+1. **Creá el blob desde el navegador** (lo más fácil, sin terminal):
 
-   ```bash
-   curl -i -X POST https://jsonblob.com/api/jsonBlob \
-     -H "Content-Type: application/json" -H "Accept: application/json" -d "[]"
-   ```
+   - Entrá a https://jsonblob.com/editor/json
+   - En el editor pegá exactamente: `[]`
+   - Dale **Save** y copiá la **URL del blob** que te da (algo como
+     `https://jsonblob.com/api/jsonBlob/1234567890123456789`).
 
-   Copiá la URL que aparece en la cabecera `Location:` de la respuesta, algo como:
-   `https://jsonblob.com/api/jsonBlob/1234567890123456789`
+   Verificá que exista abriendo esa URL en el navegador: debe mostrarte `[]`.
+   Si ves una página **404**, el blob no se creó — repetí el paso.
 
-   (Alternativa: entrá a https://jsonblob.com, pegá `[]`, guardalo y copiá la URL del blob.)
+   > Alternativa con curl (macOS / Linux / Git Bash). ⚠️ En **Windows PowerShell** el
+   > alias `curl` NO acepta esta sintaxis; usá Git Bash o `curl.exe`:
+   >
+   > ```bash
+   > curl -i -X POST https://jsonblob.com/api/jsonBlob \
+   >   -H "Content-Type: application/json" -H "Accept: application/json" -d "[]"
+   > ```
+   >
+   > Copiá la URL de la cabecera `Location:` de la respuesta.
 
 2. Abrí `index.html`, buscá al inicio del `<script>` y pegá esa URL:
 

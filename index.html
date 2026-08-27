@@ -544,15 +544,23 @@ const LB = {
     try{ localStorage.setItem('nc-queue',JSON.stringify(q)); }catch(e){}
   },
 
-  /* remote calls (throw on any network/HTTP failure) */
+  /* remote calls (throw on any network/HTTP failure)
+     this.err → 'missing' = blob 404 (no existe) · 'http' = otro error */
+  err:null,
   async _remoteLoad(){
+    this.err=null;
     if(this.mode==='GLOBAL'){
       const r=await fetch(SUPA_URL+'/rest/v1/neon_scores?select=name,score&order=score.desc,id.asc&limit=5',{headers:this._hd()});
-      if(!r.ok) throw new Error(r.status);
+      if(!r.ok){ this.err='http'; throw new Error(r.status); }
       return await r.json();
     }
     const r=await fetch(JSONBLOB_URL,{headers:{Accept:'application/json'}});
-    if(!r.ok) throw new Error(r.status);
+    if(!r.ok){
+      this.err = r.status===404 ? 'missing' : 'http';
+      console.warn('[NeonCrush] JSON Blob respondió '+r.status+
+        (r.status===404?' — el blob NO existe. Crealo gratis en https://jsonblob.com/editor/json (pegá []) y actualizá JSONBLOB_URL.':''));
+      throw new Error(r.status);
+    }
     const j=await r.json();
     if(!Array.isArray(j)) throw new Error('bad json');
     return j.slice(0,5);
@@ -594,8 +602,9 @@ const LB = {
     if(!this.hasRemote()) return {ok:true};
     if(navigator.onLine){
       try{ await this._remoteSave(name,score); await this.flush(); return {ok:true, synced:true}; }
-      catch(e){ /* treat as offline */ }
+      catch(e){ /* treat as offline — unless the blob simply doesn't exist */ }
     }
+    if(this.err==='missing') return {ok:true, fatal:true};  // a 404 will never sync: don't queue
     this._enqueue(name,score);                      // offline → sync later
     return {ok:true, queued:true};
   },
@@ -923,6 +932,9 @@ const UI = {
       note='SIN CONEXI\u00d3N \u00b7 mostrando tu top 5 local \u2014 '
         +(pend ? pend+' puntaje'+(pend>1?'s':'')+' en cola' : 'tu puntaje')
         +' se sincronizar\u00e1n con el ranking global al volver internet';
+    }else if(LB.err==='missing'){
+      el.textContent=LB.mode+' \u2715';
+      note='\u26a0 BLOB NO ENCONTRADO (404) \u00b7 crealo gratis en jsonblob.com/editor/json, peg\u00e1 [] y guard\u00e1 \u2014 luego copi\u00e1 la URL del blob y actualiz\u00e1 JSONBLOB_URL en index.html. Mientras tanto se guarda LOCAL.';
     }else if(pend){
       note+=' \u00b7 '+pend+' en cola de sincronizaci\u00f3n';
     }
@@ -1014,14 +1026,18 @@ const UI = {
     inp.disabled=true; btn.disabled=true;
     AudioFX.bonus();
     const res=await LB.save(name, this._pending);
-    btn.textContent = res.queued ? 'QUEUED' : 'SAVED';
+    btn.textContent = res.fatal ? 'LOCAL' : res.queued ? 'QUEUED' : 'SAVED';
     this._lastMe={name, score:this._pending};
     const list=await LB.load();
     this.renderTop5($('#top5-over'), list, this._lastMe);
     const W=N*CFG.cell/2;
     particles.burst(W,W*.3,'#a3ff12',16,1.4);
     ring(W,W*.3,'#a3ff12',{from:.4,to:3,dur:.5});
-    if(res.queued){
+    if(res.fatal){
+      this.floatText(W,W*.62,'BLOB 404 \u00b7 GUARDADO LOCAL \u2014 VER README.md',
+        {color:'#ff4d5e',size:12,dur:2.2});
+      AudioFX.warn();
+    }else if(res.queued){
       this.floatText(W,W*.62,'OFFLINE \u00b7 SE SINCRONIZAR\u00c1 AL VOLVER INTERNET',
         {color:'#ffb300',size:12,dur:1.8});
       AudioFX.warn();

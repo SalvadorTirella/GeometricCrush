@@ -19,14 +19,20 @@ lo que buscás: un "archivo JSON en la nube" o una DB liviana, visibles desde cu
 | Modo | Dónde vive el ranking | Registro | Tag en el juego |
 |---|---|---|---|
 | LOCAL | `localStorage` de cada jugador | ninguno | `LOCAL` |
-| JSON | archivo JSON en jsonblob.com | **ninguno** | `JSON` |
-| GLOBAL | Postgres gratis en Supabase | cuenta gratis | `GLOBAL` |
+| ~~JSON~~ | ~~archivo JSON en jsonblob.com~~ | ~~ninguno~~ | ~~`JSON`~~ ⚠️ bloqueado |
+| **GLOBAL** ✅ | Postgres gratis en Supabase | cuenta gratis | `GLOBAL` |
 
 Con LOCAL funciona igual, pero cada dispositivo ve su propio Top 5.
 
 ---
 
-## 🅰️ Opción JSON — ranking mundial sin crear cuentas (2 minutos)
+## 🅰️ Opción JSON — jsonblob.com (⚠️ BLOQUEADO, usá la 🅱️)
+
+> **⚠️ AVISO:** jsonblob.com está detrás de **Cloudflare y rechaza las llamadas a su
+> API** con una página de bloqueo (error 403 "Attention Required"), tanto para leer como
+> para guardar. Tus PUT/GET nunca llegan al servicio, así que el ranking no funciona.
+> **Pasá directamente a la opción 🅱️ (Supabase)**: es gratis, confiable y ya está
+> implementada en el juego.
 
 1. **Creá el blob desde el navegador** (lo más fácil, sin terminal):
 
@@ -126,8 +132,10 @@ insertar puntajes, nada más.
    const SUPA_KEY = 'eyJhbGciOi...';
    ```
 
-El tag del ranking pasa a decir **GLOBAL**. (Si completás ambas opciones, JSON gana por
-prioridad; dejá `JSONBLOB_URL` vacío para usar Supabase.)
+El tag del ranking pasa a decir **GLOBAL**.
+
+> ⚠️ Como jsonblob está bloqueado por Cloudflare, **dejá `JSONBLOB_URL` vacío** y
+> completá solo `SUPA_URL` + `SUPA_KEY` para tener el ranking mundial funcionando.
 
 ---
 

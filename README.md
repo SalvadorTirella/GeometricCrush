@@ -89,6 +89,22 @@ prioridad; dejá `JSONBLOB_URL` vacío para usar Supabase.)
 
 ---
 
+## 📡 Sin conexión a internet (modo OFFLINE)
+
+Si el jugador pierde la conexión (o el servicio no responde), el juego automáticamente:
+
+1. Muestra y compara contra su **top 5 local** — la etiqueta del ranking cambia a
+   **OFFLINE** en ámbar y la nota explica el estado.
+2. Si el puntaje entra en el top 5, se guarda igual y queda **en cola**
+   (el botón dice `QUEUED` y se avisa "se sincronizará al volver internet").
+3. Cuando vuelve la conexión — evento `online` del navegador o reintento automático
+   cada 20 segundos — la cola se **sincroniza sola con el ranking global**: aparece el
+   aviso `SYNCED N SCORES → GLOBAL` con explosión de partículas y el Top 5 se refresca.
+
+Sin conexión nadie pierde su puntaje; con conexión, todos comparten el mismo ranking.
+
+---
+
 ## 🚀 Publicar y compartir el link
 
 Solo necesitás `index.html` (GSAP y las fuentes se cargan por CDN).

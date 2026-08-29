@@ -1,0 +1,518 @@
+================================================================================
+   NEON CRUSH — DOCUMENTO TÉCNICO DE DISEÑO E INGENIERÍA
+   Motor Match-3 Arcade · Single-File HTML + GSAP
+   Versión documentada: v1.4.3
+================================================================================
+
+ÍNDICE
+  01. Visión general y filosofía
+  02. Arquitectura técnica (un solo archivo)
+  03. Máquina de estados
+  04. Diseño visual: tipografía, paleta y formas
+  05. El tablero 12x8 y el responsive
+  06. Interacción y movimiento (GSAP)
+  07. Sistema de matches, cascadas y combos
+  08. Poderes especiales y reglas de activación
+  09. Sistemas de partículas (todos)
+  10. Motor de animación y feedback
+  11. Integración con los ajustes de gráficos (Quality)
+  12. Temática cósmica: el selector de dificultad
+  13. Base de datos, rankings y modo offline
+  14. Rendimiento, iOS y accesibilidad
+  15. Versionado semántico y publicación
+  16. Cronología: cómo lo construimos sesión a sesión
+
+================================================================================
+01. VISIÓN GENERAL Y FILOSOFÍA
+================================================================================
+
+Neon Crush es un Match-3 estilo Candy Crush, pero con identidad propia: una
+estética "neón arcade" oscura, con formas geométricas puras dibujadas en CSS
+(sin ninguna imagen ni sprite) y toda la animación delegada a GSAP.
+
+Filosofía de diseño:
+  · Todo vive en UN solo index.html (GSAP y fuentes vienen por CDN).
+  · Cero assets binarios: cada forma es geometría CSS (clip-path, gradientes,
+    conic-gradient para los discos de acreción).
+  · El movimiento ES el juego: cada acción (swap, match, caída, poder, combo)
+    tiene feedback visual + sonoro perceptible.
+  · El juego debe correr en CUALQUIER dispositivo: por eso existe un
+    controlador de calidad gráfica con auto-detección y benchmark real.
+
+================================================================================
+02. ARQUITECTURA TÉCNICA (UN SOLO ARCHIVO)
+================================================================================
+
+Aunque es un solo archivo, el código está organizado en módulos lógicos
+claramente separados por secciones comentadas:
+
+  GLOBAL    → constantes (CFG, ROWS=12, COLS=8, TYPES de gemas, APP_VERSION)
+  State     → máquina de estados congelada (Object.freeze)
+  AudioFX   → sintetizador WebAudio (sonidos generados por código, sin mp3)
+  Cookie    → persistencia del mejor puntaje
+  LB        → leaderboard (LOCAL / JSON / GLOBAL + cola offline)
+  Quality   → controlador de calidad gráfica (presets + auto-detección)
+  UI        → HUD, overlays, textos flotantes, anillos, ranking
+  Board     → grilla, generación sin matches iniciales, barajado
+  Tile      → cada gema: DOM, color, forma, partículas orbitales
+  InputCtl  → arrastre, tap, selección, detección de swaps
+  Match     → detección H/V, clusters L/T/+, búsqueda de jugadas válidas
+  Gravity   → caída de gemas + spawn desde arriba
+  Special   → forja de poderes, acumulación de partículas, transformaciones
+  Score     → puntaje con multiplicador por dificultad + desbloqueos
+  Combo     → profundidad de cascada
+  Animation → timelines GSAP (swap, destroy, beam, suck, blast, fragments)
+  ParticlePool → motor de partículas DOM con reciclaje
+  AmbientFX → canvas de fondo (polvo ambiental + meteoros)
+  Game      → orquestador: loop de turnos, resolve, cadenas, dificultad
+
+¿Por qué GSAP y no un framework de juego?
+  GSAP da tweens de altísima calidad (easing, timelines, stagger) sobre el DOM
+  con un rendimiento excelente, y permite animar cientos de nodos a 60 FPS sin
+  escribir un game-loop manual. El DOM es ideal aquí porque las gemas son
+  elementos con CSS rico (gradientes, clip-path, máscaras) que serían difíciles
+  de replicar en canvas.
+
+================================================================================
+03. MÁQUINA DE ESTADOS
+================================================================================
+
+Estados (congelados con Object.freeze):
+
+  START      → pantalla de inicio / ranking
+  PLAYING    → el jugador puede interactuar
+  SWAPPING   → animación de intercambio en curso
+  RESOLVING  → matches, explosiones, gravedad, cascadas
+  GAME_OVER  → overlay final
+
+Regla de oro: la entrada SIEMPRE está bloqueada fuera de PLAYING. Esto evita
+que el jugador haga swaps mientras el tablero se está resolviendo, lo que
+corrompería la lógica. El atributo `state` se refleja en `body[data-state]`
+para que el CSS también reaccione.
+
+Estados "transversales" adicionales que controlan flujos:
+  · hinting     → una pista automática está animándose
+  · settingsOpen→ el panel de ajustes está abierto (pausa penalizaciones)
+  · meteorBusy  → una tormenta de meteoros está cayendo
+
+================================================================================
+04. DISEÑO VISUAL: TIPOGRAFÍA, PALETA Y FORMAS
+================================================================================
+
+TIPOGRAFÍA (dos familias con roles claros):
+  · Orbitron  → display: títulos, números del HUD, botones, logo.
+                Es geométrica, futurista, perfecta para "neón arcade".
+  · Rajdhani  → cuerpo: descripciones, notas, textos de ayuda.
+                Es condensada y muy legible a tamaños pequeños.
+
+PALETA (neón sobre fondo casi negro #01020a):
+  Cian     #00e5ff   → acento primario / UI
+  Magenta  #ff2fd2   → acento secundario / botones "de acción"
+  Lima     #a3ff12   → éxito, bonus, CRUSH
+  Coral    #ff4d5e   → peligro, penalización
+  Violeta  #b06bff   → agujeros negros
+  Amarillo-rojizo #ff6f43 → soles
+  Amarillo puro   #ffe14d → rombos (diamantes)
+  Gris     #b3bac9   → meteoritos
+
+LAS 9 GEMAS (todas geometría CSS pura):
+  0 círculo   cian      → border-radius:50%
+  1 cuadrado  magenta   → clip-path polygon
+  2 triángulo lima      → clip-path polygon
+  3 rombo     amarillo  → clip-path polygon (50% 1%, 99% 50%, ...)
+  4 hexágono  coral     → clip-path polygon
+  5 estrella  violeta   → clip-path polygon de 10 puntas
+  6 agujero negro → núcleo negro + disco de acreción giratorio (conic-gradient
+                    con máscara radial) — se desbloquea a los 10K
+  7 sol       → esfera con gradiente radial amarillo→rojo y corona de rayos
+                giratorios — se desbloquea a los 20K
+  8 meteorito → roca gris poligonal irregular con cráteres de magma — solo
+                cae del cielo en tormentas, desde los 30K
+
+Cada gema tiene:
+  · un gradiente radial de "brillo especular" (highlight superior-izquierdo)
+  · un gradiente lineal de cuerpo en 3 paradas (claro→medio→oscuro)
+  · animación "gemBreath": respira (escala 1↔1.07 + micro-rotación) con duración
+    y delay aleatorios por gema, para que el tablero nunca se vea estático.
+
+DECISIÓN CLAVE DE COLOR (v1.4.3):
+  El marco del tablero (#shell) tenía una animación `hue-rotate(34deg)` que
+  rotaba el tono de TODAS las gemas. El rombo (ámbar, tono ~42°) derivaba hasta
+  ~76°, casi idéntico al triángulo (lima, tono ~84°). Se ELIMINÓ el hue-rotate
+  y se fijó el rombo en amarillo puro #ffe14d. Ahora los colores son estables y
+  las tres familias (amarillo rombo / verde-lima triángulo / rojo-amarillo sol)
+  están bien separadas.
+
+================================================================================
+05. EL TABLERO 12x8 Y EL RESPONSIVE
+================================================================================
+
+El tablero es de 12 FILAS × 8 COLUMNAS (vertical, ideal para cascadas largas).
+Se usan dos constantes, ROWS=12 y COLS=8, en lugar de una sola N, porque la
+geometría es rectangular.
+
+Cálculo de tamaño (resize):
+  · cell = max(20, floor(min(ancho/COLS, alto/ROWS)))
+  · Se reserva el grosor del marco (24px) + un margen mínimo de 10px por lado,
+    garantizando que el tablero NUNCA toque los bordes de la pantalla.
+
+Generación inicial:
+  · Se llena celda por celda evitando formar matches de 3 (mirando las 2 gemas
+    de la izquierda y las 2 de arriba), con un pool que crece según el puntaje.
+  · Se garantiza que exista al menos una jugada válida; si no, se regenera.
+
+Responsive:
+  · Escritorio: el HUD es una sola línea (logo | MEJOR·PUNTOS·JUGADAS·CRUSH |
+    tuerca+parlante).
+  · Móvil (≤740px): el HUD se reorganiza en DOS líneas:
+      línea 1 → NEONCRUSH (izq) + tuerca + parlante (der)
+      línea 2 → MEJOR (izq) + PUNTOS·JUGADAS (centro) + CRUSH (der)
+    Esto resolvió el solapamiento y la desaparición del "MEJOR" en pantallas
+    chicas.
+
+================================================================================
+06. INTERACCIÓN Y MOVIMIENTO (GSAP)
+================================================================================
+
+Selección:
+  · Tap en una gema → escala al 120% con easing back.out, borde blanco
+    luminoso y pulso sutil. Tap en una vecina → swap.
+
+Swap válido:
+  · Las dos gemas se mueven simultáneamente con easing personalizado y un
+    "settle bounce" (rebote de asentamiento con back.out).
+  · Se consumen las jugadas y se dispara resolve().
+
+Swap inválido:
+  · Pausa breve → shake de rechazo → rollback animado. NO consume jugadas ni
+    puntaje. Explota en rojo como feedback.
+
+Arrastre (drag/swipe):
+  · Se detecta el gesto sobre el tablero (touch-action:none) y se calcula la
+    dirección dominante. Funciona igual en mouse y touch.
+
+Regla de activación de poderes (v1.3.0):
+  · Un poder SOLO se detona si (a) el jugador lo toca, o (b) el bloque que lo
+    contiene va a ser destruido (match, explosión, zona de meteorito, etc.).
+  · NUNCA se activa solo. Hay guardas contra "fichas fantasma" (ya reemplazadas
+    o fuera del tablero) en tap(), activateSpecial() y detonateChain().
+  · Desde v1.2.1 basta UN solo toque (no doble) para detonar un poder, porque
+    el doble toque hacía zoom en iPhone. Arrastrar un poder aún lo intercambia.
+
+================================================================================
+07. SISTEMA DE MATCHES, CASCADAS Y COMBOS
+================================================================================
+
+Detección (Match.find):
+  · Recorre el tablero buscando corridas horizontales y verticales de 3+.
+  · Todas las gemas combinan de a 3+, INCLUIDOS los meteoritos (v1.4.2).
+
+Clusters (formas L / T / +):
+  · Los matches que comparten al menos una celda se fusionan en un "cluster".
+  · Se cuentan las CELDAS ÚNICAS totales del cluster (sin importar orientación):
+      5+ celdas → COLOR BOMB (línea de 5, o 3H+3V en L/T)
+      4 en línea → LINE BOMB (orientación = dirección del match)
+
+Cascadas:
+  · Loop: match → destruir → gravedad → spawn → ¿nuevos matches? → repetir.
+  · Cada iteración incrementa la profundidad (depth), que multiplica el puntaje
+    y aumenta el shake de pantalla.
+
+Scoring:
+  · puntos = celdas × 10 × depth + bonus por poderes forjados.
+  · Los matches de 4+ otorgan JUGADAS EXTRA (cantidad según dificultad).
+  · El multiplicador de dificultad se aplica en Score.add() (fácil=1/3,
+    medio=2/3, difícil=1), para que el ranking sea equitativo.
+
+Pista anti-inactividad:
+  · Si el jugador pasa X segundos sin jugar (según dificultad), el tablero
+    busca un combo válido, hace rebotar las dos gemas y penaliza con jugadas
+    (−1 normal, −2 en difícil).
+
+================================================================================
+08. PODERES ESPECIALES Y REGLAS DE ACTIVACIÓN
+================================================================================
+
+BOMBA LINEAL (match de 4):
+  · Barra una fila o columna completa con un haz de energía.
+  · APILAMIENTO (v1.3.0): si una bomba lineal activa a otra de la MISMA
+    orientación en cadena, el poder se apila: +2 líneas por bomba extra
+    (1 → 3 → 5 → 7 ...). Se dibuja UN HAZ POR LÍNEA, ondulando desde el centro.
+
+BOMBA DE COLOR (cluster de 5+ celdas):
+  · Esfera multicolor giratoria. Al tocarla, limpia TODAS las gemas del color
+    más frecuente del tablero. Reconoce los 9 tipos.
+
+AGUJERO NEGRO (desde 10K):
+  · ACUMULACIÓN DE PARTÍCULAS: nacen con 0. Al combinar 3+, el sobreviviente
+    ABSORBE las partículas de todos los fusionados + 1 por la unión.
+      Ej: agujero(1) + agujero(1) + agujero(0) → 1+1+0+1 = 3 partículas.
+  · Con 3 partículas → AGUJERO MASIVO: un toque forma una SINGULARIDAD.
+
+SINGULARIDAD:
+  · Al tocarla, SUCCIONA todo en un área 5×5: cada gema espirala girando hacia
+    el centro encogiéndose hasta desaparecer (Anim.suck), con flash, triple
+    anillo y explosión. Encadena con otros poderes de la zona.
+
+SOL (desde 20K):
+  · Esfera amarillo-rojiza con corona de rayos giratorios.
+  · Al combinar 3 soles, COLAPSAN en un AGUJERO NEGRO (que empieza con 0
+    partículas). NO explotan solos (v1.4.0 eliminó el "sol inestable").
+
+METEORITO (desde 30K):
+  · Solo cae del cielo en TORMENTAS (cada 30s–2min, o más frecuente en fácil).
+  · Al combinar 3+ → COLISIÓN: explota y lanza FRAGMENTOS que caen sobre
+    casillas aleatorias DISPERSAS y las destruyen:
+      3 meteoritos → 5 fragmentos
+      4 meteoritos → 8 fragmentos
+      5+ meteoritos → 12 fragmentos
+  · Los fragmentos hacen un arco alto y variado (Anim.fragments), explotan al
+    impactar y desaparecen. La selección de casillas garantiza dispersión real
+    (barajado + preferencia por celdas lejanas entre sí), nunca en línea.
+
+REACCIONES EN CADENA:
+  · detonateChain() (BFS): cualquier especial alcanzado por una explosión
+    también detona, con pausa escalonada. Los sets fired/cleared evitan loops.
+
+ANOMALÍAS (bloques deshabilitados):
+  · Cada 2–3 minutos (según dificultad) se deshabilitan casillas al azar
+    (void): bloquean matches y swaps, dificultando el juego progresivamente.
+
+================================================================================
+09. SISTEMAS DE PARTÍCULAS (TODOS)
+================================================================================
+
+Hay DOS motores de partículas independientes:
+
+A) ParticlePool (partículas DOM, para el gameplay):
+   · Pool pre-creado de ~340 nodos <i> que se RECICLAN (zero garbage
+     collection → 60 FPS estables). Nunca se crean/destruyen nodos en caliente.
+   · Cada partícula es un GSAP tween individual (posición, escala, opacidad,
+     rotación). Al terminar, el nodo vuelve al pool.
+   · Métodos:
+       burst(x,y,color,n,power)   → explosión radial (matches, poderes)
+       spark(x,y,color)           → chispa pequeña (aterrizajes, poderes)
+       implode(x,y,color,n)       → convergen al centro (carga de poderes,
+                                     acumulación de agujeros)
+       confetti(cx,cy)            → lluvia de confeti (nuevo récord)
+   · La cantidad real se escala por Quality.pmul() (densidad baja/media/alta).
+
+B) AmbientFX (canvas 2D, para el fondo):
+   · ~170 motas de luz neón con sprites de glow prerrenderizados (radial
+     gradient), titileo individual, deriva sinusoidal y PARALLAX que sigue al
+     puntero.
+   · COMETAS / METEOROS de fondo: cruzan la pantalla cada 1–3s con estela
+     degradada; cada 16–30s cae una LLUVIA de 4–6 en ráfaga.
+   · Se pausa con la pestaña oculta y respeta prefers-reduced-motion.
+
+C) Efectos compuestos (usando el pool + anillos):
+   · ring(x,y,color) → onda de choque expansiva (SVG/CSS circle animado)
+   · flashBoard()    → destello blanco sobre el tablero
+   · beam()          → haz de línea (bombas lineales, multi-línea)
+   · suck()          → succión de la singularidad
+   · blast()         → eyección radial (explosiones de zona)
+   · fragments()     → fragmentos de meteorito con arco balístico
+   · Partículas ORBITALES: los agujeros negros y soles acumulan chispas que
+     giran a su alrededor (Special.setOrbit), una por match.
+
+================================================================================
+10. MOTOR DE ANIMACIÓN Y FEEDBACK
+================================================================================
+
+Todo el movimiento usa GSAP con easings expresivos:
+  · back.out(1.8–3)   → rebotes de asentamiento y morphs de poderes
+  · bounce.out        → la "lluvia" inicial de gemas al repartir (dealIn)
+  · power2.in/out     → swaps, destrucciones, caída
+  · elastic / power3  → succión y eyección
+
+Feedback en cascada (cada acción dispara varias capas a la vez):
+  1. Partículas (burst/implode/spark)
+  2. Anillos de energía (ring)
+  3. Texto flotante (UI.floatText): "+120", "COMBO x3", "¡3 LÍNEAS!"
+  4. Screen shake (escalado con la profundidad del combo)
+  5. Flash de tablero en combos x3+
+  6. Sonido WebAudio sintetizado (pop, swap, bomb, bonus, warn...)
+  7. Pop del marcador en el HUD (UI.popScore)
+
+El audio es 100% sintetizado con WebAudio (osciladores + envelopes): no hay
+archivos de sonido. Cada evento tiene su firma tonal. Hay botón de mute
+(parlante) compartido entre el HUD y el selector cósmico.
+
+================================================================================
+11. INTEGRACIÓN CON LOS AJUSTES DE GRÁFICOS (Quality)
+================================================================================
+
+El objeto Quality controla 8 dimensiones, persistidas en localStorage por
+dispositivo y aplicadas EN VIVO:
+
+  particles  → partículas de bloques (explosiones, chispas, confeti)
+  bg         → partículas de fondo (canvas ambiental + meteoros)
+  breath     → respiración de las gemas (clase q-nobreath pausa la animación)
+  shapes     → animación de formas (discos, vórtices, órbitas → q-noshapes)
+  shake      → vibración de pantalla
+  flash      → destellos blancos
+  glow       → brillos/neón (EL MÁS IMPORTANTE en iPhone: elimina drop-shadow
+               animados, backdrop-blur y hue-rotate, que son los verdaderos
+               asesinos de FPS en Safari)
+  density    → densidad de partículas: baja / media / alta (afecta pmul())
+
+PRESETS:
+  ALTA    → todo encendido, densidad alta  (PC, gama alta)
+  MEDIA   → quita breath + flash           (gama media, iPhone en Safari)
+  MÍNIMA  → apaga partículas, fondo, shapes, shake, flash (gama baja)
+
+AUTO-DETECCIÓN (al primer arranque):
+  · Lee navigator.deviceMemory, hardwareConcurrency y detecta iOS.
+  · Un iPhone arranca en MEDIA; un Pixel 9 Pro (8GB/8+ núcleos) en ALTA;
+    gama muy baja en MÍNIMA.
+
+BENCHMARK REAL:
+  · Botón "⚡ PROBAR MI DISPOSITIVO": estresa la GPU ~0.6s midiendo los FPS
+    reales y aplica el preset ideal (≥52→ALTA, ≥38→MEDIA, menos→MÍNIMA).
+
+El panel de ajustes se abre con la TUERCA (presente en el HUD y en el selector
+cósmico) como un drawer lateral. Mientras está abierto no corren las
+penalizaciones de inactividad ni los meteoros.
+
+================================================================================
+12. TEMÁTICA CÓSMICA: EL SELECTOR DE DIFICULTAD
+================================================================================
+
+Entre el menú y el tablero hay una PANTALLA INTERMEDIA profesional centrada en
+cuerpos celestes que modifican las reglas (CSS 3D-ish, cards con hover, cuerpos
+flotantes animados, y los controles de tuerca + parlante + nombre del juego):
+
+PLANETA (FÁCIL) — mult 1/3:
+  · Sin obstáculos complejos. Meteoros frecuentes que ayudan a limpiar.
+  · Más tiempo de inactividad para la pista (12s), bonus de jugadas generoso.
+
+SOL (INTERMEDIO) — mult 2/3:
+  · Experiencia estándar. Meteoros + agujeros negros/soles según puntaje.
+
+AGUJERO NEGRO (DIFÍCIL) — mult 1:
+  · Menos jugadas base, pista a los 7s que penaliza −2, anomalías más
+    frecuentes, casi sin ayuda de meteoros. Punitivo y táctico.
+
+El multiplicador se aplica en Score.add(), de modo que jugar más fácil da menos
+puntos y el ranking global permanece EQUITATIVO.
+
+================================================================================
+13. BASE DE DATOS, RANKINGS Y MODO OFFLINE
+================================================================================
+
+El leaderboard (LB) tiene tres modos, seleccionados por constantes al inicio
+del <script>:
+
+  LOCAL  → cada dispositivo guarda su Top 5 en localStorage. (Por defecto.)
+  JSON   → un archivo JSON en jsonblob.com. ⚠️ ACTUALMENTE BLOQUEADO por
+           Cloudflare (error 403), así que no se recomienda.
+  GLOBAL → Supabase (Postgres gratis) vía su API REST. Es la opción robusta.
+
+CÓMO SE USA (Supabase):
+  1. Crear proyecto gratis en supabase.com.
+  2. Ejecutar en SQL Editor:
+       create table neon_scores (id bigint generated always as identity
+         primary key, name text not null, score integer not null,
+         created_at timestamptz default now());
+       alter table neon_scores enable row level security;
+       create policy "leer"   on neon_scores for select using (true);
+       create policy "insert" on neon_scores for insert with check (true);
+  3. Pegar SUPA_URL y SUPA_KEY (la clave anon es pública por diseño; las
+     políticas RLS solo permiten leer e insertar).
+
+FLUJO DEL TOP 5:
+  · Al terminar, si el puntaje clasifica, aparece un input temático para el
+    nombre (MÁXIMO 10 caracteres), con contador 7/10 y guardado con Enter/SAVE.
+  · El ranking se muestra en el Game Over (con medallas 🥇🥈🥉 y resaltado
+    "·TÚ") y en la pantalla de inicio.
+
+MODO OFFLINE (offline-first):
+  · Sin conexión, se compara contra el Top 5 LOCAL (caché siempre actualizada).
+  · Si clasificas, el puntaje se ENCOLA. Al volver internet (evento online o
+    reintento cada 20s) la cola se sincroniza sola con el ranking GLOBAL y
+    aparece "N PUNTOS SINCRONIZADOS → GLOBAL".
+
+MEJOR PUNTAJE:
+  · Se guarda en una COOKIE del navegador (nc-best, 365 días, SameSite=Lax),
+    como pidió el usuario.
+
+================================================================================
+14. RENDIMIENTO, iOS Y ACCESIBILIDAD
+================================================================================
+
+Problema detectado: iPhone 12 Pro Max iba lento incluso en "mínimo".
+Diagnóstico: el cuello de botella NO eran las partículas sino los FILTROS CSS
+ANIMADOS (drop-shadow, backdrop-blur, hue-rotate) que Safari compositea mal.
+Solución: el toggle "glow" los elimina todos; el preset MEDIA lo apaga por
+defecto; canvas a 1x en densidad baja.
+
+Arreglos específicos de iOS:
+  · touch-action: manipulation en TODOS los elementos → mata el doble-toque-
+    para-zoom de Safari y el retardo de 300ms. El tablero conserva
+    touch-action:none (necesario para arrastrar) y los paneles pan-y.
+  · Cancelación de los gestos de pellizco propios de Safari
+    (gesturestart/change/end con preventDefault).
+  · Inputs fijados en 16px → evita el auto-zoom de iOS al enfocar.
+  · Poderes con UN solo toque (el doble toque hacía zoom).
+
+Accesibilidad:
+  · Respeta prefers-reduced-motion (reduce partículas y desactiva shake).
+  · Botones con aria-label, toggles con aria-pressed.
+
+================================================================================
+15. VERSIONADO SEMÁNTICO Y PUBLICACIÓN
+================================================================================
+
+VERSIONADO:
+  · La versión vive en `const APP_VERSION = 'vX.Y.Z'` (visible bajo el logo y
+    en ajustes).
+  · Un workflow de GitHub Actions (.github/workflows/auto-version.yml)
+    incrementa el PATCH en cada Pull Request y hace commit en la rama del PR
+    usando el TÍTULO del PR como motivo. Minor/major se editan a mano.
+
+PUBLICACIÓN (para jugar con un link):
+  · Opción rápida: arrastrar index.html a app.netlify.com/drop → link al instante.
+  · Con git: push a GitHub y activar Settings → Pages → Branch: main. El juego
+    quedará en https://TU_USUARIO.github.io/NOMBRE_REPO/.
+
+================================================================================
+16. CRONOLOGÍA: CÓMO LO CONSTRUIMOS SESIÓN A SESIÓN
+================================================================================
+
+  v1.0.0  Motor base: 8x8, 6 gemas, matches, cascadas, gravedad, poderes
+          (4→línea, 5→color), combos, 25 jugadas, glassmorphism neón, GSAP.
+  v1.0.x  Fondo de partículas ambientales + parallax; bomba de 5; órbitas en
+          especiales; cookie para el récord; penalización por inactividad (10s).
+  v1.1.0  Más vida: cometas, sheen, marcos animados, más partículas, ondas de
+          choque, fuegos artificiales, chispas aleatorias en poderes.
+          Regla: 5+ en CUALQUIER forma (línea, L, T) da Color Bomb.
+  v1.2.x  Reacciones en cadena entre especiales (nada desaparece sin explotar).
+          Tablero 12x8. Ranking Top 5 (LOCAL/JSON/Supabase) + input de nombre
+          (10 chars) + modo offline con cola de sincronización.
+  v1.3.0  Poderes solo se activan al tocarlos o al ser destruidos; bombas
+          lineales apiladas (1→3→5→7 líneas con un haz por línea).
+  v1.3.x  Agujeros negros (10K) con acumulación de partículas (3 = singularidad
+          clikeable); soles (20K); HUD responsive de 2 líneas + panel de ajustes
+          con tuerca.
+  v1.4.0  SELECTOR CÓSMICO de dificultad (Planeta/Sol/Agujero Negro) con
+          multiplicadores 1/3 · 2/3 · 1; anomalías (bloques void) cada 2–3 min;
+          controlador de calidad gráfica con auto-detección y benchmark;
+          versionado semántico automático en PRs.
+  v1.4.1  Meteoritos combinan de a 3+ y lanzan fragmentos (3→5, 4→8, 5→12).
+  v1.4.2  Fragmentos a casillas aleatorias dispersas (no lineales); soles
+          amarillo-rojizos.
+  v1.4.3  Rombos amarillo puro y estable (se eliminó el hue-rotate del marco que
+          hacía derivar los colores hacia el verde del triángulo).
+
+================================================================================
+RESUMEN EN UNA LÍNEA
+================================================================================
+
+Neon Crush es un Match-3 neón de un solo archivo: geometría CSS pura, GSAP para
+todo el movimiento, dos motores de partículas (DOM reciclado + canvas ambiental),
+poderes encadenables con reglas estrictas de activación, temática cósmica con
+tres dificultades equitativas, un controlador de calidad gráfica que se adapta a
+cada dispositivo, ranking global offline-first (Supabase/localStorage) y
+versionado semántico automático — todo jugable desde un link.
+
+================================================================================

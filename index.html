@@ -120,6 +120,11 @@ body.settings-open #settings{ color:var(--magenta); filter:drop-shadow(0 0 14px 
 #mute.muted .wave{ opacity:0; }
 #mute.muted .slash{ opacity:1; }
 #mute .slash{ opacity:0; transition:opacity .15s; }
+/* fullscreen toggle — expand icon normally, collapse icon while fullscreen */
+.fs-btn .fs-off{ display:none; }
+body.is-fs .fs-btn .fs-off{ display:block; }
+body.is-fs .fs-btn .fs-on{ display:none; }
+body.is-fs .fs-btn{ color:var(--lime); filter:drop-shadow(0 0 10px rgba(163,255,18,.45)); }
 /* CRUSH — once-per-minute board scrambler */
 #crush{ position:relative; overflow:hidden; cursor:pointer; border:none; color:#12030f; min-width:96px;
   font-family:'Orbitron',sans-serif; font-weight:800; font-size:13px; letter-spacing:.16em; line-height:1.05;
@@ -721,6 +726,12 @@ body.q-noglow .tag{ text-shadow:none; }
           <path class="slash" d="M4 4l16 16"/>
         </svg>
       </button>
+      <button id="fs-btn" class="icon-btn fs-btn js-fullscreen" aria-label="Pantalla completa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <g class="fs-on"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></g>
+          <g class="fs-off"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></g>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -817,6 +828,12 @@ body.q-noglow .tag{ text-shadow:none; }
             <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
             <path class="wave" d="M18.5 6a9 9 0 0 1 0 12"/>
             <path class="slash" d="M4 4l16 16"/>
+          </svg>
+        </button>
+        <button class="icon-btn fs-btn js-fullscreen" aria-label="Pantalla completa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <g class="fs-on"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></g>
+            <g class="fs-off"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></g>
           </svg>
         </button>
       </div>
@@ -2398,6 +2415,29 @@ class Game{
     }, 20000);
     document.querySelectorAll('.js-mute').forEach(b=>
       b.addEventListener('click', ()=>{ AudioFX.ensure(); AudioFX.toggle(); this.applyMuteUI(); }));
+    /* fullscreen toggle (with Safari's webkit prefix); the board re-fits on change */
+    const d=document, el=d.documentElement;
+    const toggleFS=()=>{
+      AudioFX.ensure();
+      const isFS=!!(d.fullscreenElement||d.webkitFullscreenElement);
+      if(isFS){
+        (d.exitFullscreen||d.webkitExitFullscreen||(()=>{})).call(d);
+        tone(420,{dur:.08,type:'sine',vol:.3,slide:-140});
+      }else{
+        try{
+          const p=(el.requestFullscreen||el.webkitRequestFullscreen).call(el);
+          if(p&&p.catch) p.catch(()=>{});
+        }catch(e){}
+        tone(540,{dur:.08,type:'sine',vol:.3,slide:160});
+      }
+    };
+    document.querySelectorAll('.js-fullscreen').forEach(b=>b.addEventListener('click', toggleFS));
+    const syncFS=()=>{
+      d.body.classList.toggle('is-fs', !!(d.fullscreenElement||d.webkitFullscreenElement));
+      setTimeout(()=>this.resize(), 80);
+    };
+    d.addEventListener('fullscreenchange', syncFS);
+    d.addEventListener('webkitfullscreenchange', syncFS);
     /* settings drawer */
     UI.syncQuality();
     const openSettings=()=>{

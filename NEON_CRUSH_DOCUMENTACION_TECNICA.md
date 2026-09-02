@@ -308,6 +308,12 @@ que hace que el juego se sienta "vivo":
   cuando está listo pulsa (`crushReady`). Al tocarlo, barre todo el tablero.
 - **Engranaje (ajustes)**: se enciende magenta cuando el drawer está abierto.
 - **Parlante (mute)**: las ondas de sonido se ocultan y aparece una barra diagonal.
+- **Pantalla completa**: alterna entre los íconos de expandir (`fs-on`) y comprimir (`fs-off`)
+  según el estado real del navegador (evento `fullscreenchange` / `webkitfullscreenchange`).
+  En pantalla completa el botón se tiñe lima. Usa la Fullscreen API con prefijo `webkit`
+  para Safari; en iPhone (donde la API no existe) muestra un toast ámbar
+  "PANTALLA COMPLETA NO SOPORTADA AQUÍ" en lugar de un botón muerto. Al cambiar de estado
+  el tablero se recalcula (`resize()`) tras 80 ms.
 
 ### 6.4 Guía anti-estancamiento (pista automática)
 

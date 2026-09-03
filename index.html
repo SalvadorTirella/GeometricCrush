@@ -263,10 +263,38 @@ input, select, textarea{ font-size:16px; }
   clip-path:polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%);
   background:linear-gradient(160deg, #e8ecf2, #b3bac9 40%, #8a93a5 70%, #5c6474);
   box-shadow:0 0 8px rgba(255,150,60,.65); }
-/* specials */
-.shape.stripes-h::after,.shape.stripes-v::after{ content:''; position:absolute; inset:0; }
+/* specials — line bombs: H stripes on ::after, V stripes on ::before (cross = both) */
+.shape.stripes-h::after,.shape.stripes-v::before{ content:''; position:absolute; inset:0; }
 .shape.stripes-h::after{ background:repeating-linear-gradient(0deg, rgba(255,255,255,.8) 0 3px, rgba(255,255,255,0) 3px 9px); }
-.shape.stripes-v::after{ background:repeating-linear-gradient(90deg, rgba(255,255,255,.8) 0 3px, rgba(255,255,255,0) 3px 9px); }
+.shape.stripes-v::before{ background:repeating-linear-gradient(90deg, rgba(255,255,255,.8) 0 3px, rgba(255,255,255,0) 3px 9px); }
+.shape.stripes-h.stripes-v::after,
+.shape.stripes-h.stripes-v::before{ inset:-2%; }
+/* SUPER line bomb — bright aura + pulsing halo ring */
+.shape.super{ filter:brightness(1.22) saturate(1.35); }
+.tile.super .inner::before{ content:''; position:absolute; inset:-9%; border-radius:26%; pointer-events:none; z-index:4;
+  border:2px solid rgba(255,255,255,.9);
+  box-shadow:0 0 16px rgba(255,255,255,.65), inset 0 0 12px rgba(255,255,255,.4);
+  animation:hintPulse .9s ease-in-out infinite; }
+/* 5-line ULTRA bomb — gold double halo, faster pulse */
+.shape.ultra5{ filter:brightness(1.4) saturate(1.5); }
+.tile.ultra5 .inner::before{ content:''; position:absolute; inset:-10%; border-radius:26%; pointer-events:none; z-index:4;
+  border:2px solid #ffd98a; outline:2px solid rgba(255,47,210,.7); outline-offset:3px;
+  box-shadow:0 0 22px rgba(255,217,138,.8), inset 0 0 14px rgba(255,217,138,.45);
+  animation:hintPulse .5s ease-in-out infinite; }
+/* multi-color bombs — core recolored by how many colors it wipes */
+.shape.bomb.c2 .core{ background:conic-gradient(#00e5ff 0 50%, #ff2fd2 50% 100%); animation-duration:1.6s; }
+.shape.bomb.c3 .core{ background:conic-gradient(#00e5ff 0 33%, #ff2fd2 33% 66%, #a3ff12 66% 100%); animation-duration:1.05s; }
+.shape.bomb.c2,.shape.bomb.c3{ box-shadow:inset 0 0 0 2px rgba(255,255,255,.75), 0 0 16px rgba(255,255,255,.35); }
+/* ULTRA black hole — white-hot core, molten rim, hyperfast accretion disk */
+.s-hole.ultra::before{ animation-duration:1.05s;
+  background:conic-gradient(from 0deg, transparent 0 4%, #ffd98a 12%, #ffffff 22%, #ff8c1a 32%, transparent 42% 52%,
+    #ffd98a 60%, #ffffff 70%, #ff8c1a 80%, transparent 90%); }
+.s-hole.ultra::after{ background:radial-gradient(circle at 42% 36%, #ffffff 0 26%, #ffe9c4 52%, #ffb35e 100%);
+  box-shadow:0 0 26px 9px rgba(255,220,150,.85), inset 0 0 14px #ffffff; }
+.tile.sp-ultra .inner::before{ content:''; position:absolute; inset:-11%; border-radius:50%; pointer-events:none; z-index:4;
+  border:2px solid rgba(255,179,94,.9);
+  box-shadow:0 0 24px rgba(255,179,94,.7), inset 0 0 16px rgba(255,179,94,.4);
+  animation:hintPulse .6s ease-in-out infinite; }
 .shape.bomb{ border-radius:50%; background:#0a0e24; overflow:hidden;
   box-shadow:inset 0 0 0 2px rgba(255,255,255,.5); }
 .shape.bomb .core{ position:absolute; inset:-22%; border-radius:50%;
@@ -765,11 +793,12 @@ body.q-noglow .tag{ text-shadow:none; }
       </div>
       <ul class="how">
         <li>Arrastra una gema —o toca dos vecinas— para intercambiarlas. Alinea <b class="cy">3+</b> para aplastar.</li>
-        <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5+ gemas</b> en una forma (5 en línea, o combinadas en L / T como 3H+3V) → BOMBA DE COLOR. Si una BOMBA LINEAL activa a otra en cadena, el haz gana <b class="mg">+2 líneas</b> por bomba extra (3, 5, 7…).</li>
-        <li><b class="am">Un solo toque</b> sobre una gema de poder y detona al instante (arrástrala si querés intercambiarla).</li>
-        <li><b class="lm">Elige tu órbita</b>: cada dificultad da más o menos jugadas y movimientos extra; las cascadas multiplican los puntos.</li>
+        <li>Junta <b class="mg">4</b> → BOMBA LINEAL · <b class="mg">5-6 gemas</b> (línea, L o T) → BOMBA DE COLOR · <b class="mg">7+</b> → SÚPER CRUZ (3 filas + 3 columnas).</li>
+        <li><b class="cy">FUSIONES:</b> intercambia 2 BOMBAS LINEALES → SÚPER de 3 líneas (máx. 5 y 5 en cruz) · 2 BOMBAS DE COLOR → DOBLE COLOR (máx. TRIPLE) · 2 SINGULARIDADES → AGUJERO ULTRA que absorbe TODO el tablero.</li>
+        <li><b class="am">Un solo toque</b> sobre una gema de poder y detona al instante (arrástrala si querés intercambiarla o fusionarla).</li>
+        <li><b class="lm">Elige tu órbita</b>: cada dificultad da más o menos jugadas. Las líneas de 4+ dan jugadas extra <b class="lm">incrementales</b> (5→+1, 6→+2, 7→+3…) y las cascadas multiplican los puntos.</li>
         <li>Si te quedas sin jugar, el tablero rebota un combo por ti — a cambio de jugadas. Tu mejor puntaje se guarda en una cookie.</li>
-        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">un toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor.</li>
+        <li>A los <b class="vh">10K pts</b> llegan los AGUJEROS NEGROS: al juntar <b class="vh">3</b>, uno sobrevive y <b class="vh">absorbe las partículas de todos</b> (+1 por la unión). Con <b class="vh">3 partículas</b> se vuelve un AGUJERO MASIVO: <b class="vh">un toque</b> y forma una SINGULARIDAD que absorbe todo a su alrededor. Intercambia <b class="vh">2 SINGULARIDADES</b> → AGUJERO ULTRA (absorbe las 96 casillas).</li>
         <li>A los <b class="mh">20K pts</b> llegan los SOLES: al juntar <b class="mh">3</b> colapsan en un AGUJERO NEGRO.</li>
         <li>A los <b class="mt">30K pts</b> (o desde el inicio en PLANETA) caen METEORITOS grises. Al juntar <b class="mt">3</b> colisionan y lanzan <b class="mt">5 fragmentos</b>; con <b class="mt">4</b> lanzan <b class="mt">8</b> y con <b class="mt">5</b> lanzan <b class="mt">12</b>. Los fragmentos caen y destruyen los bloques que impactan.</li>
       </ul>
@@ -947,7 +976,7 @@ body.q-noglow .tag{ text-shadow:none; }
 const $ = s => document.querySelector(s);
 const ROWS = 12, COLS = 8;
 /* semantic version — auto-bumped (patch) by .github/workflows/auto-version.yml on every PR */
-const APP_VERSION = 'v1.4.5';  // botón de pantalla completa junto al parlante (HUD + selector cósmico)
+const APP_VERSION = 'v1.5.1';  // supers: línea (3-5 líneas/cruz), doble-triple color, agujero ultra (96 casillas) + jugadas extra incrementales
 const CFG = { cell:64, startMoves:10, tapWindow:340, swipeRatio:.3, idleMs:10000, crushMs:60000, holeAt:10000, sunAt:20000, meteorAt:30000, voidMs:18000 };
 /* ══ COSMIC DIFFICULTY — each body rewrites the rules of the board ══
    mult scales every point earned so the ranking stays fair across orbits. */
@@ -1800,13 +1829,12 @@ const Anim = {
     gsap.to(t.inner,{scale:1.32,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
     await wait(340);
   },
-  /* line-bomb beam — with chained bombs it draws ONE BEAM PER SWEPT LINE,
-     rippling outward from the center row/col for a professional stacked look */
+  /* line-bomb beam — ONE BEAM PER SWEPT LINE (rows h / columns v, each 1-3-5),
+     rippling outward from the center for a professional stacked look */
   beam(t){
-    const horiz = t.special==='lineH';
+    const L=t.lines||{h:1,v:0};
     const sizeH = CFG.cell*COLS, sizeV = CFG.cell*ROWS, col = t.color;
-    const m=t._lineMult||1, half=(m-1)/2;
-    const mkLine=(idx,thick,core)=>{
+    const mkLine=(horiz,idx,thick,core)=>{
       const el=document.createElement('div');
       el.className='beam';
       const delay=Math.abs(idx)*.055;                 /* center first, edges ripple out */
@@ -1829,10 +1857,12 @@ const Anim = {
       fxEl.appendChild(el);
       gsap.to(el,{opacity:0,duration:.3,delay:delay+.24,onComplete:()=>el.remove()});
     };
-    for(let k=-half;k<=half;k++) mkLine(k, k===0?CFG.cell*.5:CFG.cell*.42, false);
-    mkLine(0, CFG.cell*.18, true);                    /* white hot core on the origin line */
+    const halfH=(L.h-1)/2, halfV=(L.v-1)/2;
+    for(let k=-halfH;k<=halfH;k++) mkLine(true, k, k===0?CFG.cell*.5:CFG.cell*.4, false);
+    for(let k=-halfV;k<=halfV;k++) mkLine(false, k, k===0?CFG.cell*.5:CFG.cell*.4, false);
+    mkLine(L.h>0, 0, CFG.cell*.18, true);             /* white hot core on the origin line */
     const [ox,oy]=center(t);
-    ring(ox,oy,col,{from:.6,to:3+m*.6,dur:.4});
+    ring(ox,oy,col,{from:.6,to:3+Math.max(L.h,L.v)*.6,dur:.4});
   },
   /* singularity: every victim spirals into the center, shrinking as it's devoured */
   suck(tiles,cx,cy){
@@ -2077,25 +2107,38 @@ const Special = {
       const total=cl.cellSet.size;
       const [fr,fc]=cl.runs[0].cells[0];
       const clType = g[fr][fc] ? g[fr][fc].type : -2;
-      let kind=null;
+      let kind=null, planLines=null;
       if(clType===8){                                 /* meteors: 3+ cluster → collision that launches fragments */
         kind = total>=3 ? 'meteorImpact' : null;
       }else if(clType===6){                           /* black holes: match → one survives + 1 particle */
         kind = 'keep';
-      }else if(clType===7){                           /* moons: match → one survives + 1 particle */
-        kind = 'keepSun';                       /* suns: combining 3 collapses them into a hole */
+      }else if(clType===7){                           /* suns: combining 3 collapses them into a hole */
+        kind = 'keepSun';
       }else{
         const maxLen=Math.max(...cl.runs.map(r=>r.len));
-        if(total>=5) kind='bomb';
+        if(total>=7){ kind='cross'; planLines={h:3,v:3}; }      /* 7+ → SUPER cruz 3H+3V */
+        else if(total>=5) kind='bomb';                          /* 5-6 → bomba de color */
         else if(maxLen>=4){
           const long=cl.runs.find(r=>r.len>=4);
-          kind = long.dir==='H' ? 'lineH' : 'lineV';
+          kind='line'; planLines = long.dir==='H' ? {h:1,v:0} : {h:0,v:1};
         }
+      }
+      /* two or more line bombs matched together → they FUSE into a super instead of dying */
+      const lineKeys=[...cl.cellSet].filter(k=>{
+        const tt=g[(k/COLS)|0][k%COLS]; return tt && tt.special==='line';
+      });
+      if(lineKeys.length>=2){
+        let pk=lineKeys[0];
+        if(hint){
+          const hk=hint.a.r*COLS+hint.a.c, hk2=hint.b.r*COLS+hint.b.c;
+          if(lineKeys.includes(hk)) pk=hk; else if(lineKeys.includes(hk2)) pk=hk2;
+        }
+        plans.push({ r:(pk/COLS)|0, c:pk%COLS, kind:'mergeLines', cells:lineKeys });
       }
       if(!kind) continue;
       // pick pivot: intersection cell > swapped tile (hint) > middle of longest run
       let pivot=null;
-      if(kind==='bomb'){
+      if(kind==='bomb' || kind==='cross'){
         const counts=new Map();
         cl.runs.forEach(run=>run.cells.forEach(([r,c])=>{
           const k=r*COLS+c; counts.set(k,(counts.get(k)||0)+1);
@@ -2115,17 +2158,25 @@ const Special = {
       const key=pivot[0]*COLS+pivot[1];
       if(taken.has(key)) continue;
       taken.add(key);
-      plans.push({ r:pivot[0], c:pivot[1], kind, cells:[...cl.cellSet] });
+      plans.push({ r:pivot[0], c:pivot[1], kind, lines:planLines, cells:[...cl.cellSet] });
     }
     return plans;
   },
-  morph(t,kind){
+  /* fuse two line-bomb payloads: same orientation stacks (+1 extra), cross keeps both.
+     Cap: 5 lines per orientation, 3 fusions per bomb. */
+  mergeLines(A,B,mc){
+    A=A||{h:1,v:0}; B=B||{h:1,v:0};
+    const h=(A.h>0&&B.h>0)? A.h+B.h+1 : A.h+B.h;
+    const v=(A.v>0&&B.v>0)? A.v+B.v+1 : A.v+B.v;
+    return { lines:{ h:Math.min(h,5), v:Math.min(v,5) }, mc:Math.min(mc||1,3) };
+  },
+  morph(t,kind,lines){
     t.special=kind;
     const sh=t.shape;
     if(kind==='bomb'){
-      t.type=-1;
+      t.type=-1; t.colors=Math.min(t.colors||1,3);
       sh.innerHTML='';
-      sh.className='shape s-circle bomb';
+      sh.className='shape s-circle bomb'+(t.colors>1?' c'+t.colors:'');
       const core=document.createElement('div');
       core.className='core'; sh.appendChild(core);
       t.paint();
@@ -2134,16 +2185,35 @@ const Special = {
       sh.innerHTML='';
       sh.className='shape vortex';
       t.paint();
+    }else if(kind==='ultra'){
+      t.type=-1;
+      sh.innerHTML='';
+      sh.className='shape s-hole ultra';
+      t.paint();
+    }else if(kind==='line'){
+      t.lines=lines||t.lines||{h:1,v:0};
+      sh.classList.remove('stripes-h','stripes-v','super','ultra5');
+      if(t.lines.h>0) sh.classList.add('stripes-h');
+      if(t.lines.v>0) sh.classList.add('stripes-v');
+      const mx=Math.max(t.lines.h,t.lines.v);
+      if(mx>=5) sh.classList.add('ultra5'); else if(mx>=3) sh.classList.add('super');
     }else{
       sh.classList.remove('stripes-h','stripes-v');
-      sh.classList.add(kind==='lineH'?'stripes-h':'stripes-v');
+      sh.classList.add('stripes-h');
     }
-    t.el.classList.add('sp', kind==='bomb' ? 'sp-bomb' : kind==='vortex' ? 'sp-vortex' : 'sp-line');
+    t.el.classList.remove('super','ultra5');
+    if(kind==='line'){
+      const mx=Math.max(t.lines.h,t.lines.v);
+      if(mx>=5) t.el.classList.add('ultra5'); else if(mx>=3) t.el.classList.add('super');
+    }
+    t.el.classList.add('sp', kind==='bomb' ? 'sp-bomb' : kind==='vortex' ? 'sp-vortex'
+      : kind==='ultra' ? 'sp-ultra' : 'sp-line');
     this.orbit(t,kind);
-    gsap.fromTo(t.inner,{scale:.3,rotation:(kind==='bomb'||kind==='vortex')?270:0},
+    gsap.fromTo(t.inner,{scale:.3,rotation:(kind==='bomb'||kind==='vortex'||kind==='ultra')?270:0},
       {scale:1,rotation:0,duration:.55,ease:'back.out(1.8)'});
     const [x,y]=center(t);
-    const col= kind==='bomb' ? '#ffffff' : kind==='vortex' ? '#b06bff' : t.color;
+    const col= kind==='bomb' ? '#ffffff' : kind==='vortex' ? '#b06bff'
+             : kind==='ultra' ? '#ffd98a' : t.color;
     ring(x,y,col,{from:.4,to:3.6,dur:.5});
     ring(x,y,'#ffffff',{from:.3,to:2.2,dur:.42,delay:.07});
     particles.implode(x,y,col,15);
@@ -2153,15 +2223,22 @@ const Special = {
       particles.implode(x,y,'#b06bff',16);
       AudioFX.vortex();
     }
+    if(kind==='ultra'){
+      ring(x,y,'#ffb35e',{from:.6,to:7,dur:.7,delay:.1});
+      ring(x,y,'#ffffff',{from:.4,to:4.4,dur:.55,delay:.18});
+      particles.implode(x,y,'#ffd98a',22);
+      flashBoard(); AudioFX.vortex();
+    }
   },
   /* orbiting spark particles bound to a special tile */
   orbit(t,kind){
     if(t.el.querySelector('.orbit')) return;
     const orb=document.createElement('div'); orb.className='orbit';
-    const n = (kind==='bomb'||kind==='vortex') ? 6 : 3;
+    const n = kind==='ultra' ? 8 : (kind==='bomb'||kind==='vortex') ? 6 : 3;
     for(let i=0;i<n;i++){
       const d=document.createElement('i'); d.className='odot';
       const col = kind==='bomb' ? TYPES[i%6].color
+                : kind==='ultra' ? (i%2 ? '#ffffff' : '#ffd98a')
                 : kind==='vortex' ? (i%2 ? '#ffffff' : '#b06bff') : t.color;
       d.style.setProperty('--a',(360*i/n)+'deg');
       d.style.background=col;
@@ -2657,6 +2734,14 @@ class Game{
     particles.burst(bx,by,b.color,6,.6);
     await Anim.swap(a,b);
     this.board.swap(a,b);
+    /* two like specials swapped together → FUSE into a super (no match needed) */
+    if(a.special && b.special && a.special===b.special &&
+       ['line','bomb','vortex'].includes(a.special)){
+      Score.moves--; UI.renderMoves(true);
+      await this.fuseSpecials(a,b);
+      await this.endTurn();
+      return;
+    }
     const runs=Match.find(this.board.grid);
     if(!runs.length){
       await wait(90);
@@ -2671,6 +2756,35 @@ class Game{
     UI.renderMoves(true);
     await this.resolve(runs,{a,b});
     await this.endTurn();
+  }
+
+  /* fuse two swapped specials into a SUPER — the initiator (a) survives */
+  async fuseSpecials(a,b){
+    const [sx,sy]=center(a);
+    gsap.to(b.el,{x:a.c*CFG.cell, y:a.r*CFG.cell, scale:.1, opacity:0,
+      rotation:'+=200', duration:.3, ease:'power2.in', onComplete:()=>b.el.remove()});
+    particles.implode(center(b)[0],center(b)[1],b.color,10);
+    await wait(310);
+    const g=this.board.grid;
+    g[b.r][b.c]=null;
+    if(a.special==='line'){
+      const res=Special.mergeLines(a.lines, b.lines, Math.max(a.mc||0,b.mc||0)+1);
+      a.lines=res.lines; a.mc=res.mc;
+      Special.morph(a,'line',a.lines);
+      const cross=a.lines.h>0&&a.lines.v>0;
+      UI.floatText(sx,sy-CFG.cell, cross?'¡CRUZ!':'¡SUPER LÍNEA ×'+Math.max(a.lines.h,a.lines.v)+'!',
+        {color:a.color,size:17,dur:1.1});
+    }else if(a.special==='bomb'){
+      a.colors=Math.min((a.colors||1)+(b.colors||1),3);
+      Special.morph(a,'bomb');
+      const label=['','BOMBA DE COLOR','¡DOBLE COLOR!','¡TRIPLE COLOR!'][a.colors];
+      UI.floatText(sx,sy-CFG.cell,label,{color:'#ffffff',size:17,dur:1.1});
+    }else{ /* vortex + vortex */
+      Special.morph(a,'ultra');
+      UI.floatText(sx,sy-CFG.cell,'¡AGUJERO ULTRA!',{color:'#ffd98a',size:19,dur:1.3});
+      UI.floatText(sx,sy-CFG.cell*.1,'TOCALO: ABSORBE TODO',{color:'#ffffff',size:10,dur:1.3});
+    }
+    this.shake(6); AudioFX.special();
   }
 
   async resolve(runs,hint){
@@ -2696,7 +2810,8 @@ class Game{
       this.shake(Math.min(2.5+depth*2.4, 14));
 
       let bonus=0;
-      runs.forEach(run=>{ if(run.len>=4) bonus+=this.diff.bonusMoves; });
+      /* incremental: a run of L≥4 grants base + (L−4) extra moves */
+      runs.forEach(run=>{ if(run.len>=4) bonus+=this.diff.bonusMoves+(run.len-4); });
       if(bonus){
         Score.moves+=bonus;
         UI.renderMoves(true);
@@ -2713,7 +2828,7 @@ class Game{
       const protect=new Set();
       if(plans.length){
         plans.forEach(p=>{
-          if(p.kind==='blast') return;              /* blasts detonate instantly, no morph */
+          if(p.kind==='blast' || p.kind==='mergeLines') return;  /* no morph for these */
           const t=g[p.r][p.c]; if(!t) return;
           protect.add(t);
           if(p.kind==='keep' || p.kind==='keepSun'){
@@ -2738,8 +2853,41 @@ class Game{
             }else{
               gsap.fromTo(t.inner,{scale:1},{scale:1.3,duration:.16,yoyo:true,repeat:1,ease:'power2.inOut'});
             }
-          }else Special.morph(t,p.kind);
+          }else Special.morph(t,p.kind,p.lines);
         });
+        AudioFX.special();
+      }
+      /* line bombs matched together → they fuse into a super instead of detonating */
+      const mergePlans=plans.filter(p=>p.kind==='mergeLines');
+      for(const mp of mergePlans){
+        const pivot=g[mp.r][mp.c];
+        if(!pivot || pivot.special!=='line') continue;
+        const others=[];
+        mp.cells.forEach(k=>{
+          const rr=(k/COLS)|0, cc=k%COLS; const tt=g[rr][cc];
+          if(tt && tt!==pivot && tt.special==='line') others.push(tt);
+        });
+        if(!others.length) continue;
+        const [px,py]=center(pivot);
+        others.forEach(o=>{
+          const [x,y]=center(o);
+          particles.implode(x,y,o.color,8);
+          gsap.to(o.el,{x:pivot.c*CFG.cell, y:pivot.r*CFG.cell, scale:.1, opacity:0,
+            rotation:'+=200', duration:.3, ease:'power2.in', onComplete:()=>o.el.remove()});
+          g[o.r][o.c]=null;
+        });
+        await wait(330);
+        let L=pivot.lines||{h:1,v:0}, mc=pivot.mc||0;
+        others.forEach(o=>{
+          const res=Special.mergeLines(L, o.lines||{h:1,v:0}, mc+1);
+          L=res.lines; mc=res.mc;
+        });
+        pivot.lines=L; pivot.mc=mc;
+        Special.morph(pivot,'line',L);
+        protect.add(pivot);
+        const cross=L.h>0&&L.v>0;
+        UI.floatText(px,py-CFG.cell*.9, cross?'¡CRUZ!':'¡SUPER LÍNEA ×'+Math.max(L.h,L.v)+'!',
+          {color:pivot.color,size:16,dur:1});
         AudioFX.special();
       }
       // meteor 3+ cluster → COLLISION: the impact explodes, then launches fragments
@@ -2760,7 +2908,7 @@ class Game{
           {color:'#ffb36b',size:17,dur:1.1});
       }
       // any special swept into the match (or hit by the chain) detonates — nothing vanishes silently
-      const chain=await this.detonateChain(victims, cx, cy, depth, protect, null);
+      const chain=await this.detonateChain(victims, cx, cy, depth, protect);
       const extra=chain.length-victims.length;
       if(extra>0){
         const pts=extra*10*depth;
@@ -2810,11 +2958,19 @@ class Game{
     const g=this.board.grid;
     if(!t.special) return [];   /* normal gems never trigger blasts — only specials do */
     if(t.special==='bomb'){
+      /* wipes the N most abundant colors on the board (1, 2 or 3) */
       const counts=Array(9).fill(0);
       this.board.all().forEach(x=>{ if(x.type>=0) counts[x.type]++; });
-      let col=0; for(let i=1;i<9;i++) if(counts[i]>counts[col]) col=i;
-      t._bombColor=col;
-      return this.board.all().filter(x=>x.type===col && x!==t);
+      const n=t.colors||1;
+      const top=counts.map((cnt,i)=>[i,cnt]).filter(p=>p[0]>0)
+        .sort((a,b)=>b[1]-a[1]).slice(0,n).map(p=>p[0]);
+      t._bombColors=top;
+      t._bombColor=top[0];
+      return this.board.all().filter(x=>top.includes(x.type) && x!==t);
+    }
+    if(t.special==='ultra'){
+      /* the ultra black hole devours the ENTIRE board */
+      return this.board.all().filter(x=>x!==t);
     }
     if(t.special==='vortex'){
       /* devours everything in a 5×5 zone around the singularity */
@@ -2825,31 +2981,31 @@ class Game{
         }
       return out;
     }
-    /* line bomb — when chained with k same-orientation bombs it sweeps 2k-1 lines */
-    const horiz=t.special==='lineH';
-    const m=t._lineMult||1, half=(m-1)/2;
-    const out=[];
-    if(horiz){
-      for(let rr=Math.max(0,t.r-half); rr<=Math.min(ROWS-1,t.r+half); rr++)
-        for(let c=0;c<COLS;c++){ const v=g[rr][c]; if(v && v!==t) out.push(v); }
-    }else{
-      for(let cc=Math.max(0,t.c-half); cc<=Math.min(COLS-1,t.c+half); cc++)
-        for(let r=0;r<ROWS;r++){ const v=g[r][cc]; if(v && v!==t) out.push(v); }
-    }
+    /* line bomb — sweeps its stored rows (h) and columns (v): 1, 3 or 5 of each */
+    const L=t.lines||{h:1,v:0};
+    const halfH=(L.h-1)/2, halfV=(L.v-1)/2;
+    const out=[], seen=new Set();
+    const add=v=>{ if(v && v!==t && !seen.has(v)){ seen.add(v); out.push(v); } };
+    for(let rr=Math.max(0,t.r-halfH); rr<=Math.min(ROWS-1,t.r+halfH); rr++)
+      for(let c=0;c<COLS;c++) add(g[rr][c]);
+    for(let cc=Math.max(0,t.c-halfV); cc<=Math.min(COLS-1,t.c+halfV); cc++)
+      for(let r=0;r<ROWS;r++) add(g[r][cc]);
     return out;
   }
   /* one special firing: beam / rings / flash / burst + sound */
   fireSpecialFX(s){
     const [x,y]=center(s);
     if(s.special==='bomb'){
-      const col = s._bombColor!=null ? TYPES[s._bombColor].color : '#00e5ff';
+      const cols=(s._bombColors&&s._bombColors.length?s._bombColors:[s._bombColor||0])
+        .map(i=>TYPES[i]?TYPES[i].color:'#00e5ff');
       ring(x,y,'#ffffff',{to:9.5,dur:.7});
-      ring(x,y,col,{to:7,dur:.6,delay:.06});
+      cols.forEach((col,i)=>ring(x,y,col,{to:7-i*1.6,dur:.6,delay:.06+i*.07}));
       ring(x,y,'#ffffff',{to:4.6,dur:.5,delay:.12});
       flashBoard();
-      UI.floatText(x,y-CFG.cell,'ARRASE DE COLOR',{color:'#ffffff',size:17,dur:1.1});
+      const label = cols.length>=3 ? '¡TRIPLE COLOR!' : cols.length===2 ? '¡DOBLE COLOR!' : 'ARRASE DE COLOR';
+      UI.floatText(x,y-CFG.cell,label,{color:cols[0],size:cols.length>1?19:17,dur:1.1});
       particles.burst(x,y,'#ffffff',24,2.3);
-      particles.burst(x,y,col,16,1.7);
+      cols.forEach(col=>particles.burst(x,y,col,14,1.7));
     }else if(s.special==='vortex'){
       ring(x,y,'#ffffff',{to:8.5,dur:.65});
       ring(x,y,'#b06bff',{to:6,dur:.55,delay:.05});
@@ -2860,53 +3016,51 @@ class Game{
       particles.burst(x,y,'#ffffff',18,2);
       AudioFX.vortex();
       return;
+    }else if(s.special==='ultra'){
+      ring(x,y,'#ffffff',{to:11,dur:.8});
+      ring(x,y,'#ffd98a',{to:8.5,dur:.7,delay:.06});
+      ring(x,y,'#ff8c1a',{to:6,dur:.6,delay:.12});
+      ring(x,y,'#b06bff',{to:4,dur:.5,delay:.18});
+      flashBoard(); flashBoard();
+      UI.floatText(x,y-CFG.cell,'¡AGUJERO ULTRA!',{color:'#ffd98a',size:22,dur:1.3});
+      UI.floatText(x,y-CFG.cell*.1,'ABSORBE TODO EL TABLERO',{color:'#ffffff',size:11,dur:1.3});
+      particles.implode(x,y,'#ffd98a',26);
+      particles.implode(x,y,'#ffffff',20);
+      AudioFX.vortex();
+      return;
     }else{
+      const L=s.lines||{h:1,v:0};
+      const mx=Math.max(L.h,L.v);
       Anim.beam(s);
-      ring(x,y,s.color,{to:4.2+(s._lineMult||1)*.6,dur:.45});
+      ring(x,y,s.color,{to:4.2+mx*.7,dur:.45});
+      if(mx>=3) ring(x,y,'#ffffff',{to:2.6+mx*.5,dur:.4,delay:.06});
       particles.burst(x,y,'#ffffff',18,1.8);
-      particles.burst(x,y,s.color,12,1.4);
-      if((s._lineMult||1)>1)
-        UI.floatText(x,y-CFG.cell*.9,'¡'+s._lineMult+' LÍNEAS!',{color:s.color,size:16,dur:.9});
+      particles.burst(x,y,s.color,12+mx*3,1.4);
+      if(L.h>0&&L.v>0)
+        UI.floatText(x,y-CFG.cell*.9,'¡CRUZ ×'+L.h+'·'+L.v+'!',{color:s.color,size:17,dur:.9});
+      else if(mx>=3)
+        UI.floatText(x,y-CFG.cell*.9,'¡SUPER ×'+mx+' LÍNEAS!',{color:s.color,size:17,dur:.9});
     }
     AudioFX.bomb();
   }
-  /* chain reaction: every special hit by the blast also fires (BFS, loop-safe).
-     Chained line bombs widen: k same-orientation bombs → each sweeps 2k-1 lines. */
-  async detonateChain(seeds, cx, cy, combo, protect, blastAt){
+  /* chain reaction: every special hit by the blast also fires (BFS, loop-safe) */
+  async detonateChain(seeds, cx, cy, combo, protect){
     const g=this.board.grid;
     protect = protect || new Set();
-    const base=seeds.filter(Boolean);
-    /* discover which specials fire; beams widen as more line bombs join, so
-       re-scan until the fired set stops growing (bounded, loop-safe) */
-    let order=[];
-    for(let iter=0; iter<6; iter++){
-      const fired=new Set(), seen=new Set(base), queue=[...base], ord=[];
-      while(queue.length){
-        const s=queue.shift();
-        if(s.special && !fired.has(s)){ fired.add(s); ord.push(s); }
-        for(const v of this.specialTargets(s)){
-          if(protect.has(v)||seen.has(v)) continue;
-          seen.add(v); queue.push(v);
-        }
-      }
-      const cnt={lineH:0,lineV:0};
-      ord.forEach(s=>{ if(s.special==='lineH')cnt.lineH++; else if(s.special==='lineV')cnt.lineV++; });
-      ord.forEach(s=>{
-        if(s.special==='lineH') s._lineMult=2*cnt.lineH-1;
-        else if(s.special==='lineV') s._lineMult=2*cnt.lineV-1;
-      });
-      const grew=ord.length!==order.length;
-      order=ord;
-      if(!grew) break;
-    }
-    /* collect everything cleared using the widened line targets */
-    const cleared=new Set(base);
-    order.forEach(s=>cleared.add(s));
-    order.forEach(s=>{
-      for(const v of this.specialTargets(s)){
-        if(!protect.has(v)) cleared.add(v);
-      }
+    const fired=new Set(), cleared=new Set(), order=[];
+    seeds.filter(Boolean).forEach(s=>{
+      if(cleared.has(s)) return;
+      cleared.add(s);
+      if(s.special && !fired.has(s)){ fired.add(s); order.push(s); }
     });
+    for(let i=0;i<order.length;i++){
+      const s=order[i];
+      for(const v of this.specialTargets(s)){
+        if(protect.has(v)||cleared.has(v)) continue;
+        cleared.add(v);
+        if(v.special && !fired.has(v)){ fired.add(v); order.push(v); }
+      }
+    }
     for(let i=0;i<order.length;i++){
       if(i>0) await wait(130);
       const s=order[i];
@@ -2915,17 +3069,15 @@ class Game{
       this.shake(10+Math.min(i,4)*2);
     }
     const victims=[...cleared];
+    const ultra=order.find(s=>s.special==='ultra');
     const vortex=order.find(s=>s.special==='vortex');
-    if(vortex){
-      const [vx,vy]=center(vortex);
-      await Anim.suck(victims,vx,vy);          /* everything spirals into the singularity */
-    }else if(blastAt){
-      await Anim.blast(victims,blastAt[0],blastAt[1]);  /* meteor blast: blown outward */
+    const suckAt = ultra ? center(ultra) : vortex ? center(vortex) : null;
+    if(suckAt){
+      await Anim.suck(victims,suckAt[0],suckAt[1]);  /* everything spirals into the hole */
     }else{
       await Anim.destroy(victims,{cx,cy,wave:true,combo});
     }
     victims.forEach(v=>{ if(g[v.r][v.c]===v) g[v.r][v.c]=null; });
-    order.forEach(s=>{ delete s._lineMult; });  /* widening never leaks into a later chain */
     return victims;
   }
 
